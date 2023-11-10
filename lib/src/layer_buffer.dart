@@ -151,8 +151,8 @@ class LayerBuffer {
     if (prevLayerImage != null) prevLayerImage!.dispose();
     if (layerImage != null) layerImage!.dispose();
     layerImage = picture.toImageSync(
-      iResolution.width.toInt(),
-      iResolution.height.toInt(),
+      (iResolution.width).ceil(),
+      (iResolution.height).ceil(),
     );
     picture.dispose();
     prevLayerImage = layerImage!.clone();

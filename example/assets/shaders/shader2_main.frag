@@ -3,13 +3,12 @@
 precision mediump float;
 
 layout(location = 0) uniform sampler2D iChannel0;
-layout(location = 1) uniform vec2 uResolution;
+layout(location = 1) uniform vec2 iResolution;
 layout(location = 2) uniform float iTime;
 layout(location = 3) uniform float iFrame;
 layout(location = 4) uniform vec4 iMouse;
 
 out vec4 fragColor;
-vec3 iResolution;
 
 // credits:
 // https://www.shadertoy.com/view/sl3Szs
@@ -31,7 +30,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
 
 void main() {
-    iResolution = vec3(uResolution.x, uResolution.y, 0.);
+    // Shader compiler optimizations will remove unusued uniforms.
+    // Since [LayerBuffer.computeLayer] needs to always set these uniforms, when 
+    // this happens, an error occurs when calling setFloat()
+    // `IndexError (RangeError (index): Index out of range: index should be less than 3: 3)`
+    // With the following line, the compiler will not remove unusued
+    float tmp = (iFrame/iFrame) * (iMouse.x/iMouse.x) * 
+        (iTime/iTime) * (iResolution.x/iResolution.x);
 
-    mainImage( fragColor, FlutterFragCoord().xy );
+    mainImage( fragColor, FlutterFragCoord().xy * tmp );
 }

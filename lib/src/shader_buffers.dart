@@ -86,7 +86,6 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   late Stopwatch sw;
   late IMouseController iMouse;
   late double iFrame;
-
   late bool isInited;
 
   @override
