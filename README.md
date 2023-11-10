@@ -75,7 +75,8 @@ ShaderBuffer(
 ```
 
 To achieve something similar to this flow:
-![Alt text](<flow.png>)
+
+<img src="https://github.com/alnitak/shader_buffers/assets/192827/4dc0f799-6109-4489-aae8-df379298c459" width="500" />
 
 ```dart
 final mainLayer = LayerBuffer(
@@ -111,3 +112,8 @@ after this line you can add this to swap Y coordinates:
 `uv = vec2(uv.x, 1. - uv.y);`
 
 PS: shader credits links are in the main shaders sources.
+
+
+https://github.com/alnitak/shader_buffers/assets/192827/2595f3ce-3dda-4d2e-bc96-13872570dc3b
+
+
