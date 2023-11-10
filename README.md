@@ -43,22 +43,22 @@ To start, you can define the layers:
 ```dart
 /// The main layer which uses `shader_main.frag` as a fragment shader source
 final mainImage = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_main.glsl',
+  shaderAssetsName: 'assets/shaders/shader_main.frag',
 );
-/// This [LayerBuffer] uses 'shader_bufferA.glsl' as the fragment shader
+/// This [LayerBuffer] uses 'shader_bufferA.frag' as the fragment shader
 /// and 2 other channels: the 1st is the buffer with id=1 (`bufferB`),
 /// the 2nd uses an assets image.
 final bufferA = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_bufferA.glsl',
+  shaderAssetsName: 'assets/shaders/shader_bufferA.frag',
   channels: [
     IChannelSource(buffer: 1),
     IChannelSource(assetsImage: 'assets/noise_color.png'),
   ],
 );
-/// This [LayerBuffer] uses 'shader_bufferB.glsl' as the fragment shader
+/// This [LayerBuffer] uses 'shader_bufferB.frag' as the fragment shader
 /// and `bufferA` with id=0
 final bufferB = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_bufferB.glsl',
+  shaderAssetsName: 'assets/shaders/shader_bufferB.frag',
   channels: [
     IChannelSource(buffer: 0),
   ],
@@ -80,20 +80,20 @@ To achieve something similar to this flow:
 
 ```dart
 final mainLayer = LayerBuffer(
-    shaderAssetsName: 'assets/shaders/shader_main.glsl',
+    shaderAssetsName: 'assets/shaders/shader_main.frag',
     channels: [IChannelSource(buffer: 2)],
 );
 final bufferA = LayerBuffer(
-    shaderAssetsName: 'assets/shaders/shader_bufferA.glsl',
+    shaderAssetsName: 'assets/shaders/shader_bufferA.frag',
 );
 final bufferB = LayerBuffer(
-    shaderAssetsName: 'assets/shaders/shader_bufferB.glsl',
+    shaderAssetsName: 'assets/shaders/shader_bufferB.frag',
     channels: [
       IChannelSource(buffer: 0),
     ],
 );
 final bufferC = LayerBuffer(
-    shaderAssetsName: 'assets/shaders/shader_bufferC.glsl',
+    shaderAssetsName: 'assets/shaders/shader_bufferC.frag',
     channels: [
       IChannelSource(buffer: 0),
       IChannelSource(buffer: 1),
