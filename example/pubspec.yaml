@@ -1,0 +1,48 @@
+name: shader_buffers_example
+description: Shader buffers example
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.5 <4.0.0'
+
+dependencies:
+  cupertino_icons: ^1.0.2
+  
+  flutter:
+    sdk: flutter
+
+  shader_buffers:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^2.0.0
+  
+  flutter_test:
+    sdk: flutter
+
+  very_good_analysis: ^5.1.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+
+  shaders:
+    - assets/shaders/arrows.frag
+    - assets/shaders/mouse1.frag
+    - assets/shaders/mouse2.frag
+    - assets/shaders/shader1_main.frag
+    - assets/shaders/shader1_bufferA.frag
+    - assets/shaders/shader2_main.frag
+    - assets/shaders/shader2_bufferA.frag
+    - assets/shaders/shader2_bufferB.frag
+    - assets/shaders/shader3_main.frag
+    - assets/shaders/shader3_bufferA.frag
+    - assets/shaders/shader4_main.frag
+    - assets/shaders/shader4_bufferA.frag
+    - assets/shaders/shader5_main.frag
+    - assets/shaders/shader5_bufferA.frag
+
