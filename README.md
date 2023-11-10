@@ -8,7 +8,8 @@
 
 #### Issue
 Tested on web and Linux, on other desktops it should work. Cannot test on Mac and iOS. On Android, I don't know why yet, it doesn't work and he blames me for passing too many uniforms!
-Practically when reaching `LayerBuffer.computeLayer`, the `_shader._floats` list has one item less when running on Android.
+Practically when reaching `LayerBuffer.computeLayer`, the `_shader._floats` list has one item less when running on Android. 
+This is related to the shader compile optimizations which removes the unusued uniforms, but this happens only on Android.
 
 ## Getting started
 
