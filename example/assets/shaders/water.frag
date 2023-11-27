@@ -8,26 +8,29 @@ uniform float iTime;
 uniform float iFrame;
 uniform vec4 iMouse;
 
+uniform float multiplier;
+
 out vec4 fragColor;
 
 // credits:
-// https://www.shadertoy.com/view/sl3Szs
-
+// https://www.shadertoy.com/view/ldXGz7
 
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    vec2 u = fragCoord/iResolution.xy;
-    u = vec2(u.x, 1. - u.y);
-    vec4 a = texture(iChannel0,u);
-    fragColor = a.z*(+sin(a.x*4.+vec4(1,3,5,4))*.2
-                     +sin(a.y*4.+vec4(1,3,2,4))*.2+.6);
+	vec2 uv = fragCoord.xy / iResolution.xy;
+//	uv.y = -uv.y;
+	
+	uv.y += (cos((uv.y + (iTime * 0.04 * multiplier)) * 45.0 * multiplier) * 0.0019) +
+		(cos((uv.y + (iTime * 0.1 * multiplier)) * 10.0 * multiplier) * 0.002);
+
+	uv.x += (sin((uv.y + (iTime * 0.07 * multiplier)) * 15.0 * multiplier) * 0.0029) +
+		(sin((uv.y + (iTime * 0.1 * multiplier)) * 15.0 * multiplier) * 0.002);
+		
+
+	vec4 texColor = texture(iChannel0,uv);
+	fragColor = texColor;
 }
-
-
-
-
-
 
 
 void main() {

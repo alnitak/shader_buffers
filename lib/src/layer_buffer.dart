@@ -1,128 +1,203 @@
-import 'dart:async';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+
 import 'package:shader_buffers/src/imouse.dart';
 
 /// class to define the kind of channel textures that will
 /// be used by [LayerBuffer].
 ///
 /// Only one of the parameters can be given.
-class IChannelSource {
-  ///
-  IChannelSource({
+class IChannel {
+  IChannel({
+    this.child,
     this.buffer,
-    this.assetsImage,
-  })  : assert(
-          !(buffer == null && assetsImage == null),
-          '[buffer] or [assetsImage] must be given!',
-        ),
-        assert(
-          !(buffer != null && assetsImage != null),
-          'Only [buffer] or [assetsImage] must be given!',
+    this.assetsTexturePath,
+    this.isSelf = false,
+  }) : assert(
+          !(!isSelf &&
+              child != null &&
+              buffer != null &&
+              assetsTexturePath != null),
+          'Only [isSelf] or [child] or [buffer] or [assetsTexturePath]'
+          ' must be given!',
         );
 
-  /// the buffer id number used by this [IChannelSource]
-  final int? buffer;
+  /// the widget used by this [IChannel]
+  final Widget? child;
 
-  /// the assets image path used by this [IChannelSource]
-  final String? assetsImage;
+  /// the assets image if [child] exists
+  ui.Image? childTexture;
 
-  /// the assets image computed whithin [LayerBuffer] init()
-  ui.Image? loadedImage;
+  final bool isSelf;
+
+  /// the buffer used by this [IChannel]
+  LayerBuffer? buffer;
+
+  /// the assets image path used by this [IChannel]
+  String? assetsTexturePath;
+
+  /// the assets image if [assetsTexturePath] exists
+  ui.Image? assetsTexture;
+
+  /// all textures loaded?
+  bool isInited = false;
+
+  /// eventually load textures
+  Future<bool> init() async {
+    if (isInited) return true;
+
+    isInited = true;
+    // Load all the assets textures
+    if (assetsTexturePath != null) {
+      try {
+        final assetImageByteData = await rootBundle.load(assetsTexturePath!);
+        final codec = await ui.instantiateImageCodec(
+          assetImageByteData.buffer.asUint8List(),
+        );
+        assetsTexture = (await codec.getNextFrame()).image;
+      } catch (e) {
+        debugPrint('Error loading assets image! $e');
+        isInited = false;
+      }
+    }
+
+    return isInited;
+  }
 }
 
-/// Class used to define a buffer or a main image.
+/// Class used to define a buffers or the main image layer.
 ///
-/// It takes the [shaderAssetsName] and a list of [IChannelSource]
-/// used as textures.
-///
-/// ```dart
-/// final bufferA = LayerBuffer(
-///   shaderAssetsName: 'assets/shaders/shader3_bufferA.glsl',
-///   channels: [
-///     /// fragment 'iChannel0' uses buffer id 0
-///     IChannelSource(buffer: 0),
-///     /// fragment 'iChannel1' uses an assets image
-///     IChannelSource(assetsImage: 'assets/bricks.jpg'),
-///   ],
-/// );
-/// ```
 class LayerBuffer {
+  /// Class used to define a buffers or the main image.
   ///
+  /// It takes the [shaderAssetsName] and a list of [IChannel]
+  /// used as textures.
+  ///
+  /// ```dart
+  /// final bufferA = LayerBuffer(
+  ///   shaderAssetsName: 'assets/shaders/shader3_bufferA.glsl',
+  /// );
+  /// // you can then set optional channels:
+  /// bufferA.setChannels([
+  ///   IChannel(buffer: bufferA),
+  ///   IChannel(assetsTexturePath: 'assets/bricks.jpg'),
+  /// ]);
+  /// ```
   LayerBuffer({
     required this.shaderAssetsName,
-    this.channels,
+    this.floatUniforms,
   });
 
   /// The fragment shader source to use
   final String shaderAssetsName;
 
+  /// additional floats uniforms
+  List<double>? floatUniforms;
+
   /// the channels this shader will use
-  final List<IChannelSource>? channels;
+  List<IChannel>? channels;
 
+  /// the fragment program used by this layer
   ui.FragmentProgram? _program;
-  ui.FragmentShader? _shader;
 
-  /// The image computed in the previous frame
-  ui.Image? prevLayerImage;
+  /// the fragment shader used by this layer
+  ui.FragmentShader? _shader;
 
   /// The last image computed
   ui.Image? layerImage;
 
   /// Used internally when shader or channel are not yet initialized
-  late ui.Image _blankImage;
+  ui.Image? _blankImage;
 
-  /// Initialize the shader and the iChannels if any
-  Future<bool> init() async {
-    await Future.wait<void>([
-      _loadIAssetsImages(),
-      _loadShader(),
-    ]);
-    debugPrint('$shaderAssetsName init ${_program != null && _shader != null}');
-    return _program != null && _shader != null;
+  List<void Function()> conditionalOperation = [];
+
+  /// set channels of this layer
+  void setChannels(List<IChannel> chan) {
+    channels = chan.toList();
   }
 
-  Future<void> _loadShader() async {
+  /// swap channels
+  void swapChannels(int index1, int index2) {
+    if (channels?.isEmpty ?? true) return;
+    RangeError.checkValidIndex(index1, channels, 'index1');
+    RangeError.checkValidIndex(index2, channels, 'index2');
+    final tmp = channels![index1];
+    channels![index1] = channels![index2];
+    channels![index2] = tmp;
+  }
+
+  /// Initialize the shader and the textures if any
+  Future<bool> init() async {
+    var loaded = true;
+    loaded = await _loadShader();
+    loaded &= await _loadIAssetsTextures();
+    debugPrint('LayerBuffer.init() loaded: $loaded  $shaderAssetsName');
+    return loaded;
+  }
+
+  /// load fragment shader
+  Future<bool> _loadShader() async {
     try {
       _program = await ui.FragmentProgram.fromAsset(shaderAssetsName);
       _shader = _program?.fragmentShader();
     } on Exception catch (e) {
       debugPrint('Cannot load shader $shaderAssetsName! $e');
+      return false;
     }
+    return true;
   }
 
-  /// load all assets images and put into [IChannelSource.loadedImage]
-  Future<void> _loadIAssetsImages() async {
+  /// load the blank image and initialize all channel textures
+  Future<bool> _loadIAssetsTextures() async {
     /// setup blankImage. Displyed when the layerImage is not yet available
-    final assetImageByteData = await rootBundle.load('assets/black_10x10.png');
-    final codec = await ui.instantiateImageCodec(
-      assetImageByteData.buffer.asUint8List(),
-    );
-    _blankImage = (await codec.getNextFrame()).image;
-
-    if (channels == null) return;
-    for (var i = 0; i < channels!.length; i++) {
-      if (channels![i].assetsImage == null) continue;
-      final assetImageByteData =
-          await rootBundle.load(channels![i].assetsImage!);
+    try {
+      final assetImageByteData = await rootBundle
+          .load('packages/shader_buffers/assets/blank_16x16.bmp');
       final codec = await ui.instantiateImageCodec(
         assetImageByteData.buffer.asUint8List(),
       );
-      channels![i].loadedImage = (await codec.getNextFrame()).image;
+      _blankImage = (await codec.getNextFrame()).image;
+    } on Exception catch (e) {
+      debugPrint('Cannot load blankImage! $e');
+      return false;
     }
+
+    // Load all the assets textures if any
+    if (channels == null) return true;
+    for (var i = 0; i < channels!.length; ++i) {
+      for (final element in channels!) {
+        if (!element.isInited) {
+          if (!await channels![i].init()) return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void dispose() {
+    // _shader?.dispose();
+    layerImage?.dispose();
+    layerImage = null;
   }
 
   /// draw the shader into [layerImage]
+  /// clear cache mem
+  /// sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
   void computeLayer(
-    List<LayerBuffer> layers,
     Size iResolution,
     double iTime,
     double iFrame,
     IMouse iMouse,
   ) {
     if (_shader == null) return;
+
+    for (final f in conditionalOperation) {
+      f();
+    }
+
     _shader!
       ..setFloat(0, iResolution.width) // iResolution
       ..setFloat(1, iResolution.height)
@@ -133,28 +208,40 @@ class LayerBuffer {
       ..setFloat(6, iMouse.z)
       ..setFloat(7, iMouse.w);
 
+    /// eventually add more floats uniforms from [floatsUniforms]
+    for (var i = 8; i < (floatUniforms?.length ?? 0) + 8; i++) {
+      _shader!.setFloat(i, floatUniforms![i - 8]);
+    }
+
+    /// eventually add sampler2D uniforms
     for (var i = 0; i < (channels?.length ?? 0); i++) {
-      if (channels![i].assetsImage != null) {
-        _shader!.setImageSampler(i, channels![i].loadedImage ?? _blankImage);
+      if (channels![i].assetsTexturePath != null) {
+        _shader!.setImageSampler(i, channels![i].assetsTexture ?? _blankImage!);
+      } else if (channels![i].child != null) {
+        _shader!.setImageSampler(i, channels![i].childTexture ?? _blankImage!);
       } else {
-        final img = layers[channels![i].buffer!].prevLayerImage;
-        _shader!.setImageSampler(i, img ?? _blankImage);
+        _shader!.setImageSampler(
+          i,
+          channels![i].isSelf
+              ? layerImage ?? _blankImage!
+              : channels![i].buffer?.layerImage ?? _blankImage!,
+        );
       }
     }
 
-    //
-    final recorder = ui.PictureRecorder();
-    ui.Canvas(recorder)
-        .drawRect(Offset.zero & iResolution, Paint()..shader = _shader);
-    final picture = recorder.endRecording();
+    layerImage?.dispose();
+    layerImage = null;
 
-    if (prevLayerImage != null) prevLayerImage!.dispose();
-    if (layerImage != null) layerImage!.dispose();
+    final recorder = ui.PictureRecorder();
+    ui.Canvas(recorder).drawRect(
+      Offset.zero & iResolution,
+      ui.Paint()..shader = _shader,
+    );
+    final picture = recorder.endRecording();
     layerImage = picture.toImageSync(
-      (iResolution.width).ceil(),
-      (iResolution.height).ceil(),
+      iResolution.width.ceil(),
+      iResolution.height.ceil(),
     );
     picture.dispose();
-    prevLayerImage = layerImage!.clone();
   }
 }

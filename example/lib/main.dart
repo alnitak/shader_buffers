@@ -15,15 +15,28 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  late ValueNotifier<int> updateLayerImages;
-
   late Layers shader;
+  ValueNotifier<double> floatUniform = ValueNotifier<double>(1);
+  ValueNotifier<bool> operations = ValueNotifier<bool>(false);
+  final controller = ShaderBuffersController();
+  final List<bool> ops = [false, false];
 
   @override
   void initState() {
     super.initState();
-    updateLayerImages = ValueNotifier<int>(0);
     shader = shader1();
+    controller.addConditionalOperation(
+      (
+        layerBuffer: shader.mainImage,
+        param: Param.iMouseXNormalized,
+        checkType: CheckOperator.minor,
+        checkValue: 0.5,
+        operation: (result) {
+          ops[0] = result;
+          print('******  ${ops[0]} ${ops[1]}    ${operations.value}');
+        },
+      ),
+    );
   }
 
   @override
@@ -38,52 +51,38 @@ class _MainAppState extends State<MainApp> {
         body: Stack(
           alignment: Alignment.bottomCenter,
           children: [
+            ShaderBuffers(
+              // key: UniqueKey(),
+              controller: controller,
+              width: size.width,
+              height: size.height,
+              mainImage: shader.mainImage,
+              buffers: shader.buffers,
+            ),
             Align(
               alignment: Alignment.topCenter,
-              child: ShaderBuffers(
-                width: size.width,
-                height: size.height * 0.5,
-                mainImage: shader.mainImage,
-                buffers: shader.buffers,
-              ),
-            ),
-
-            /// row of images to show each layer buffers just for testing
-            Container(
-              width: size.width,
-              height: size.height * 0.45,
-              color: Colors.black26,
-              child: ValueListenableBuilder(
-                valueListenable: updateLayerImages,
-                builder: (_, __, ___) {
-                  final previewSize = Size(
-                    size.width / (shader.buffers.length + 1) * 0.9,
-                    size.height / (shader.buffers.length + 1) * 0.9,
-                  );
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // draw all buffers
-                      for (var i = 0; i < shader.buffers.length; i++)
-                        if (shader.buffers[i].layerImage != null)
-                          RawImage(
-                            image: shader.buffers[i].layerImage,
-                            width: previewSize.width,
-                            height: previewSize.height,
-                          ),
-                      // draw the main image
-                      RawImage(
-                        image: shader.mainImage.layerImage,
-                        width: previewSize.width,
-                        height: previewSize.height,
-                      ),
-                    ],
+              child: ElevatedButton(
+                onPressed: () {
+                  controller.addConditionalOperation(
+                    (
+                      layerBuffer: shader.mainImage,
+                      param: Param.iMouseYNormalized,
+                      checkType: CheckOperator.minor,
+                      checkValue: 0.5,
+                      operation: (result) {
+                        ops[1] = result;
+                        operations.value = ops[0] && ops[1];
+                      },
+                    ),
                   );
                 },
+                child: const Text('press'),
               ),
             ),
             Wrap(
               alignment: WrapAlignment.center,
+              spacing: 4,
+              runSpacing: 4,
               children: [
                 ElevatedButton(
                   onPressed: () {
@@ -93,84 +92,36 @@ class _MainAppState extends State<MainApp> {
                   },
                   child: const Text('1'),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      shader = shader2();
-                    });
+                ValueListenableBuilder(
+                  valueListenable: floatUniform,
+                  builder: (_, uniform, __) {
+                    return Slider(
+                      value: uniform,
+                      min: 0.1,
+                      max: 10,
+                      onChanged: (value) {
+                        shader.mainImage.floatUniforms = [value];
+                        floatUniform.value = value;
+                      },
+                    );
                   },
-                  child: const Text('2'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: controller.pause,
+                  child: const Text('pause'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      shader = shader3();
-                    });
-                  },
-                  child: const Text('3'),
+                  onPressed: controller.play,
+                  child: const Text('play'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      shader = shader4();
-                    });
-                  },
-                  child: const Text('4'),
+                  onPressed: controller.rewind,
+                  child: const Text('rewind'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      shader = shader5();
-                    });
-                  },
-                  child: const Text('5'),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      shader = (
-                        mainImage: LayerBuffer(
-                          shaderAssetsName: 'assets/shaders/mouse1.frag',
-                        ),
-                        buffers: [],
-                      );
-                    });
-                  },
-                  child: const Text('test mouse1'),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      shader = (
-                        mainImage: LayerBuffer(
-                          shaderAssetsName: 'assets/shaders/mouse2.frag',
-                        ),
-                        buffers: [],
-                      );
-                    });
-                  },
-                  child: const Text('test mouse2'),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      shader = (
-                        mainImage: LayerBuffer(
-                          shaderAssetsName: 'assets/shaders/arrows.frag',
-                        ),
-                        buffers: [],
-                      );
-                    });
-                  },
-                  child: const Text('arrows'),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () => updateLayerImages.value++,
-                  child: const Text('show buffers'),
+                  onPressed: controller.reset,
+                  child: const Text('reset'),
                 ),
               ],
             ),
@@ -182,79 +133,16 @@ class _MainAppState extends State<MainApp> {
 
   Layers shader1() {
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader1_main.frag',
-      channels: [IChannelSource(buffer: 0)],
+      shaderAssetsName: 'assets/shaders/water.frag',
+      floatUniforms: [1.0],
     );
-    final bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader1_bufferA.frag',
-      channels: [IChannelSource(buffer: 0)],
-    );
-    return (mainImage: mainLayer, buffers: [bufferA]);
-  }
 
-  Layers shader2() {
-    final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader2_main.frag',
-      channels: [IChannelSource(buffer: 1)],
-    );
-    final bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader2_bufferA.frag',
-      channels: [IChannelSource(buffer: 1)],
-    );
-    final bufferB = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader2_bufferB.frag',
-      channels: [
-        IChannelSource(buffer: 1),
-        IChannelSource(buffer: 0),
+    // ignore: cascade_invocations
+    mainLayer.setChannels(
+      [
+        IChannel(assetsTexturePath: 'assets/flutter.png'),
       ],
     );
-    return (mainImage: mainLayer, buffers: [bufferA, bufferB]);
-  }
-
-  Layers shader3() {
-    final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader3_main.frag',
-      channels: [IChannelSource(buffer: 0)],
-    );
-    final bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader3_bufferA.frag',
-      channels: [
-        IChannelSource(buffer: 0),
-        IChannelSource(assetsImage: 'assets/bricks.jpg'),
-      ],
-    );
-    return (mainImage: mainLayer, buffers: [bufferA]);
-  }
-
-  Layers shader4() {
-    final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader4_main.frag',
-      channels: [
-        IChannelSource(buffer: 0),
-      ],
-    );
-    final bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader4_bufferA.frag',
-      channels: [
-        IChannelSource(buffer: 0),
-      ],
-    );
-    return (mainImage: mainLayer, buffers: [bufferA]);
-  }
-
-  Layers shader5() {
-    final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader5_main.frag',
-      channels: [
-        IChannelSource(buffer: 0),
-      ],
-    );
-    final bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader5_bufferA.frag',
-      channels: [
-        IChannelSource(buffer: 0),
-      ],
-    );
-    return (mainImage: mainLayer, buffers: [bufferA]);
+    return (mainImage: mainLayer, buffers: []);
   }
 }

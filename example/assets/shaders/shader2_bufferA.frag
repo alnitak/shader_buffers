@@ -19,7 +19,7 @@ void mainImage( out vec4 fragColor, in vec2 u )
     vec2 v = u/iResolution.xy;
     vec4 a = A(u);
     vec2 m = +a.xy                      //fluid velocity
-             -vec2(1.,0.)*.01           //gravity
+             -vec2(0,1)*.01             //gravity
              +float(v.x<.05)*vec2(1,0)  //wall
              +float(v.y<.05)*vec2(0,1)  //wall
              -float(v.x>.95)*vec2(1,0)  //wall
@@ -28,11 +28,11 @@ void mainImage( out vec4 fragColor, in vec2 u )
     // float z = 4.;//kernel convolution size
     for(float i=-4.; i<=4.; ++i){
     for(float j=-4.; j<=4.; ++j){
-      vec2 c = -m+vec2(j,i);//translate the gaussian 2Dimage using the velocity
+      vec2 c = -m+vec2(i,j);//translate the gaussian 2Dimage using the velocity
       s += exp(-dot(c,c));  //calculate the gaussian 2Dimage
     }}
     if(s==0.){s = 1.;}      //avoid division by zero
-    s = 1./s;
+              s = 1./s;
     fragColor = vec4(m,s,0);//velocity in .xy
                             //convolution normalization in .z
 }

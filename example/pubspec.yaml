@@ -45,4 +45,9 @@ flutter:
     - assets/shaders/shader4_bufferA.frag
     - assets/shaders/shader5_main.frag
     - assets/shaders/shader5_bufferA.frag
+    - assets/shaders/test.frag
+    - assets/shaders/water.frag
+    - assets/shaders/page_curl.frag
+    - assets/shaders/noise_fade.frag
+    - assets/shaders/ripple.frag
 
