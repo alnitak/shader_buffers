@@ -44,8 +44,8 @@ class _MainAppState extends State<MainApp> {
               child: ShaderBuffers(
                 key: UniqueKey(),
                 controller: controller,
-                width: size.width,
-                height: size.height * 0.5,
+                textureWidth: size.width,
+                textureHeight: size.height * 0.5,
                 mainImage: shader.mainImage,
                 buffers: shader.buffers,
               ),

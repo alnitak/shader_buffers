@@ -24,19 +24,32 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
-    shader = shader1();
-    controller.addConditionalOperation(
-      (
-        layerBuffer: shader.mainImage,
-        param: Param.iMouseXNormalized,
-        checkType: CheckOperator.minor,
-        checkValue: 0.5,
-        operation: (result) {
-          ops[0] = result;
-          print('******  ${ops[0]} ${ops[1]}    ${operations.value}');
-        },
-      ),
-    );
+    shader = shader2();
+    controller
+      ..addConditionalOperation(
+        (
+          layerBuffer: shader.mainImage,
+          param: Param.iMouseXNormalized,
+          checkType: CheckOperator.minor,
+          checkValue: 0.5,
+          operation: (result) {
+            ops[0] = result;
+            print('******  ${ops[0]} ${ops[1]}    ${operations.value}');
+          },
+        ),
+      )
+      ..addConditionalOperation(
+        (
+          layerBuffer: shader.mainImage,
+          param: Param.iMouseYNormalized,
+          checkType: CheckOperator.minor,
+          checkValue: 0.5,
+          operation: (result) {
+            ops[1] = result;
+            operations.value = ops[0] && ops[1];
+          },
+        ),
+      );
   }
 
   @override
@@ -48,84 +61,77 @@ class _MainAppState extends State<MainApp> {
       darkTheme: ThemeData.dark(useMaterial3: true),
       theme: ThemeData(scaffoldBackgroundColor: Colors.black),
       home: Scaffold(
-        body: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            ShaderBuffers(
-              // key: UniqueKey(),
-              controller: controller,
-              width: size.width,
-              height: size.height,
-              mainImage: shader.mainImage,
-              buffers: shader.buffers,
-            ),
-            Align(
-              alignment: Alignment.topCenter,
-              child: ElevatedButton(
-                onPressed: () {
-                  controller.addConditionalOperation(
-                    (
-                      layerBuffer: shader.mainImage,
-                      param: Param.iMouseYNormalized,
-                      checkType: CheckOperator.minor,
-                      checkValue: 0.5,
-                      operation: (result) {
-                        ops[1] = result;
-                        operations.value = ops[0] && ops[1];
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            fit: StackFit.expand,
+            children: [
+              Align(
+                alignment: Alignment.topCenter,
+                child: ShaderBuffers(
+                  // key: UniqueKey(),
+                  controller: controller,
+                  // textureWidth: 600,
+                  // textureHeight: 350,
+                  // width: size.width,
+                  // height: size.height,
+                  mainImage: shader.mainImage,
+                  buffers: shader.buffers,
+                  startPaused: true,
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          shader = shader1();
+                        });
+                      },
+                      child: const Text('1'),
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: floatUniform,
+                      builder: (_, uniform, __) {
+                        return Slider(
+                          value: uniform,
+                          min: 0.1,
+                          max: 10,
+                          onChanged: (value) {
+                            shader.mainImage.floatUniforms = [value];
+                            floatUniform.value = value;
+                          },
+                        );
                       },
                     ),
-                  );
-                },
-                child: const Text('press'),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: controller.pause,
+                      child: const Text('pause'),
+                    ),
+                    ElevatedButton(
+                      onPressed: controller.play,
+                      child: const Text('play'),
+                    ),
+                    ElevatedButton(
+                      onPressed: controller.rewind,
+                      child: const Text('rewind'),
+                    ),
+                    ElevatedButton(
+                      onPressed: controller.reset,
+                      child: const Text('reset'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 4,
-              runSpacing: 4,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      shader = shader1();
-                    });
-                  },
-                  child: const Text('1'),
-                ),
-                ValueListenableBuilder(
-                  valueListenable: floatUniform,
-                  builder: (_, uniform, __) {
-                    return Slider(
-                      value: uniform,
-                      min: 0.1,
-                      max: 10,
-                      onChanged: (value) {
-                        shader.mainImage.floatUniforms = [value];
-                        floatUniform.value = value;
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: controller.pause,
-                  child: const Text('pause'),
-                ),
-                ElevatedButton(
-                  onPressed: controller.play,
-                  child: const Text('play'),
-                ),
-                ElevatedButton(
-                  onPressed: controller.rewind,
-                  child: const Text('rewind'),
-                ),
-                ElevatedButton(
-                  onPressed: controller.reset,
-                  child: const Text('reset'),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -133,16 +139,31 @@ class _MainAppState extends State<MainApp> {
 
   Layers shader1() {
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/water.frag',
-      floatUniforms: [1.0],
+      shaderAssetsName: 'assets/shaders/page_curl.frag',
+      // floatUniforms: [1.0],
     );
 
     // ignore: cascade_invocations
     mainLayer.setChannels(
       [
         IChannel(assetsTexturePath: 'assets/flutter.png'),
+        IChannel(assetsTexturePath: 'assets/bricks.jpg'),
       ],
     );
+    return (mainImage: mainLayer, buffers: []);
+  }
+
+  Layers shader2() {
+    final mainLayer = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/water.frag',
+      floatUniforms: [3],
+    )
+    ..setChannels(
+      [
+        IChannel(assetsTexturePath: 'assets/flutter.png'),
+      ],
+    );
+
     return (mainImage: mainLayer, buffers: []);
   }
 }
