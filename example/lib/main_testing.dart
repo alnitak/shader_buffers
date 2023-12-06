@@ -44,8 +44,8 @@ class _MainAppState extends State<MainApp> {
               child: ShaderBuffers(
                 key: UniqueKey(),
                 controller: controller,
-                textureWidth: size.width,
-                textureHeight: size.height * 0.5,
+                width: size.width,
+                height: size.height * 0.5,
                 mainImage: shader.mainImage,
                 buffers: shader.buffers,
               ),
@@ -224,25 +224,12 @@ class _MainAppState extends State<MainApp> {
                   child: const Text('pause'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    controller.play();
-                    print(
-                        'iMouse: ${controller.getIMouse()}   '
-                        'norm: ${controller.getIMouseNormalized()}');
-                  },
+                  onPressed: controller.play,
                   child: const Text('play'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    controller.rewind();
-                  },
+                  onPressed: controller.rewind,
                   child: const Text('rewind'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    controller.reset();
-                  },
-                  child: const Text('reset'),
                 ),
               ],
             ),
