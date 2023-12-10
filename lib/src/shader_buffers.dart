@@ -65,7 +65,7 @@ enum ShaderState {
 }
 
 ///
-class ShaderBuffersController {
+class ShaderController {
   void Function(Operation)? _addConditionalOperation;
   VoidCallback? _pause;
   VoidCallback? _play;
@@ -114,8 +114,11 @@ class ShaderBuffersController {
   /// );
   /// ```
   void addConditionalOperation(Operation params) {
-    conditionalOperation.add(params);
-    _addConditionalOperation?.call(params);
+    if (_addConditionalOperation == null) {
+      conditionalOperation.add(params);
+    } else {
+      _addConditionalOperation?.call(params);
+    }
   }
 
   /// pause
@@ -199,7 +202,7 @@ class ShaderBuffers extends StatefulWidget {
     this.height,
     this.startPaused = false,
     this.buffers,
-    ShaderBuffersController? controller,
+    ShaderController? controller,
     this.onPointerDown,
     this.onPointerMove,
     this.onPointerUp,
@@ -207,7 +210,7 @@ class ShaderBuffers extends StatefulWidget {
     this.onPointerMoveNormalized,
     this.onPointerUpNormalized,
     super.key,
-  }) : controller = controller ?? ShaderBuffersController();
+  }) : controller = controller ?? ShaderController();
   // assert(
   //   () {
   //     // At least one IChanell from [mainImage] or [buffers] list, must have
@@ -256,17 +259,23 @@ class ShaderBuffers extends StatefulWidget {
   final List<LayerBuffer>? buffers;
 
   /// controller for this widget.
-  final ShaderBuffersController? controller;
+  final ShaderController? controller;
 
   /// pointer callbacks to get position in texture size range.
-  final void Function(Offset position)? onPointerDown;
-  final void Function(Offset position)? onPointerMove;
-  final void Function(Offset position)? onPointerUp;
+  final void Function(ShaderController controller, Offset position)?
+      onPointerDown;
+  final void Function(ShaderController controller, Offset position)?
+      onPointerMove;
+  final void Function(ShaderController controller, Offset position)?
+      onPointerUp;
 
   /// pointer callbacks to get normalized position 0~1 range
-  final void Function(Offset position)? onPointerDownNormalized;
-  final void Function(Offset position)? onPointerMoveNormalized;
-  final void Function(Offset position)? onPointerUpNormalized;
+  final void Function(ShaderController controller, Offset position)?
+      onPointerDownNormalized;
+  final void Function(ShaderController controller, Offset position)?
+      onPointerMoveNormalized;
+  final void Function(ShaderController controller, Offset position)?
+      onPointerUpNormalized;
 
   @override
   State<ShaderBuffers> createState() => _ShaderBuffersState();
@@ -327,18 +336,12 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       _getIMouse,
       _getIMouseNormalized,
     );
-
-    /// add the operations added before putting this in the widgets tree
-    for (final f in widget.controller!.conditionalOperation) {
-      _addConditionalOperation(f);
-    }
   }
 
   void _pause() {
     if (ticker?.isActive ?? false) {
       state = ShaderState.paused;
       iTime.stop();
-      setIMouse();
       ticker?.stop();
     }
   }
@@ -349,20 +352,21 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       iMouse.start(startingPosition);
       ticker?.start();
       iTime.start();
+      tick(Duration.zero);
     }
   }
 
   void _rewind() {
     iFrame = 0;
     iTime.reset();
-    setIMouse();
 
     if (state == ShaderState.paused) {
       _play();
       iMouse.start(startingPosition);
+      iMouse.end();
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        _pause();
         tick(Duration.zero);
+        _pause();
       });
       // if (context.mounted) setState(() {});
       tick(Duration.zero);
@@ -540,6 +544,14 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     isInited = false;
     mainImageSizeChanged = false;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      /// add the operations added before putting this in the widgets tree
+      if (widget.controller!.conditionalOperation.isNotEmpty) {
+        for (final f in widget.controller!.conditionalOperation) {
+          _addConditionalOperation(f);
+        }
+        widget.controller!.conditionalOperation.clear();
+      }
+
       isInited = false;
       var shaderInited = true;
       disposeLayers();
@@ -652,6 +664,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             widget.width ?? constraints.maxWidth,
             widget.height ?? constraints.maxHeight,
           );
+          setIMouse();
           init();
           return const SizedBox.shrink();
           // return LimitedBox(
@@ -706,8 +719,10 @@ class _ShaderBuffersState extends State<ShaderBuffers>
           iMouse.start(details.localPosition);
         }
         startingPosition = details.localPosition;
-        widget.onPointerDown?.call(Offset(iMouse.iMouse.x, iMouse.iMouse.y));
+        widget.onPointerDown?.call(
+            widget.controller!, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerDownNormalized?.call(
+          widget.controller!,
           () {
             final normalized = iMouse.getIMouseNormalized();
             return Offset(normalized.x, normalized.y);
@@ -718,8 +733,10 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         if (state == ShaderState.playing) {
           iMouse.update(details.localPosition);
         }
-        widget.onPointerMove?.call(Offset(iMouse.iMouse.x, iMouse.iMouse.y));
+        widget.onPointerMove?.call(
+            widget.controller!, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerMoveNormalized?.call(
+          widget.controller!,
           () {
             final normalized = iMouse.getIMouseNormalized();
             return Offset(normalized.x, normalized.y);
@@ -730,8 +747,10 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         if (state == ShaderState.playing) {
           iMouse.end();
         }
-        widget.onPointerUp?.call(Offset(iMouse.iMouse.x, iMouse.iMouse.y));
+        widget.onPointerUp?.call(
+            widget.controller!, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerUpNormalized?.call(
+          widget.controller!,
           () {
             final normalized = iMouse.getIMouseNormalized();
             return Offset(normalized.x, normalized.y);
@@ -742,8 +761,10 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         if (state == ShaderState.playing) {
           iMouse.end();
         }
-        widget.onPointerUp?.call(Offset(iMouse.iMouse.x, iMouse.iMouse.y));
+        widget.onPointerUp?.call(
+            widget.controller!, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerUpNormalized?.call(
+          widget.controller!,
           () {
             final normalized = iMouse.getIMouseNormalized();
             return Offset(normalized.x, normalized.y);

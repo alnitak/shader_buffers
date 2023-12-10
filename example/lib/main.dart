@@ -16,15 +16,16 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   late Layers shader;
-  ValueNotifier<double> floatUniform = ValueNotifier<double>(1);
+  ValueNotifier<(double a, double b, double c)> floatUniform =
+      ValueNotifier((0.6, 8.0, 1.0));
   ValueNotifier<bool> operations = ValueNotifier<bool>(false);
-  final controller = ShaderBuffersController();
+  final controller = ShaderController();
   final List<bool> ops = [false, false];
 
   @override
   void initState() {
     super.initState();
-    shader = shader1();
+    shader = shader2();
     controller
       ..addConditionalOperation(
         (
@@ -96,7 +97,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                     // height: size.height,
                     mainImage: shader.mainImage,
                     buffers: shader.buffers,
-                    startPaused: true,
+                    startPaused: false,
                   ),
                 ),
                 Wrap(
@@ -123,14 +124,52 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                     ValueListenableBuilder(
                       valueListenable: floatUniform,
                       builder: (_, uniform, __) {
-                        return Slider(
-                          value: uniform,
-                          min: 0.1,
-                          max: 10,
-                          onChanged: (value) {
-                            shader.mainImage.floatUniforms = [value];
-                            floatUniform.value = value;
-                          },
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Slider(
+                              value: uniform.$1,
+                              min: 0.1,
+                              max: 10,
+                              onChanged: (value) {
+                                shader.mainImage.floatUniforms = [
+                                  value,
+                                  uniform.$2,
+                                  uniform.$3,
+                                ];
+                                floatUniform.value =
+                                    (value, uniform.$2, uniform.$3);
+                              },
+                            ),
+                            Slider(
+                              value: uniform.$2,
+                              min: 0.1,
+                              max: 10,
+                              onChanged: (value) {
+                                shader.mainImage.floatUniforms = [
+                                  uniform.$1,
+                                  value,
+                                  uniform.$3,
+                                ];
+                                floatUniform.value =
+                                    (uniform.$1, value, uniform.$3);
+                              },
+                            ),
+                            Slider(
+                              value: uniform.$3,
+                              min: 0.1,
+                              max: 10,
+                              onChanged: (value) {
+                                shader.mainImage.floatUniforms = [
+                                  uniform.$1,
+                                  uniform.$2,
+                                  value,
+                                ];
+                                floatUniform.value =
+                                    (uniform.$1, uniform.$2, value);
+                              },
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -187,7 +226,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   Layers shader2() {
     final mainLayer = LayerBuffer(
       shaderAssetsName: 'assets/shaders/water.frag',
-      floatUniforms: [3],
+      floatUniforms: [0.6, 8, 1],
     )..setChannels(
         [
           IChannel(assetsTexturePath: 'assets/flutter.png'),

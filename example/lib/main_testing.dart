@@ -29,7 +29,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final controller = ShaderBuffersController();
+    final controller = ShaderController();
 
     return MaterialApp(
       themeMode: ThemeMode.dark,
