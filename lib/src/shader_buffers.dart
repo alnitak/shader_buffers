@@ -357,13 +357,14 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   }
 
   void _rewind() {
+    iMouse
+      ..start(startingPosition)
+      ..end();
     iFrame = 0;
     iTime.reset();
 
     if (state == ShaderState.paused) {
       _play();
-      iMouse.start(startingPosition);
-      iMouse.end();
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         tick(Duration.zero);
         _pause();
@@ -529,15 +530,22 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   @override
   void didUpdateWidget(covariant ShaderBuffers oldWidget) {
     super.didUpdateWidget(oldWidget);
-    setIMouse();
-    init();
+    isInited = false;
+    // setIMouse();
+    // init();
   }
 
   @override
   void reassemble() {
     super.reassemble();
-    init();
-    if (context.mounted) setState(() {});
+    isInited = false;
+  }
+
+  @override
+  void dispose() {
+    ticker?.dispose();
+    disposeLayers();
+    super.dispose();
   }
 
   void init() {
@@ -581,13 +589,6 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         });
       }
     });
-  }
-
-  @override
-  void dispose() {
-    ticker?.dispose();
-    disposeLayers();
-    super.dispose();
   }
 
   void disposeLayers() {
