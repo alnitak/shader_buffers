@@ -161,37 +161,30 @@ class ShaderBuffers extends StatefulWidget {
   /// * `vec4 iMouse` for the user interaction with pointer. See [IMouse]
   ///
   /// ```dart
-  /// /// The main layer which uses `shader_main.frag` as fragment shader source
+  /// /// The main layer uses `shader_main.frag` as fragment shader source and some float uniforms
   /// final mainImage = LayerBuffer(
   ///   shaderAssetsName: 'assets/shaders/shader_main.glsl',
+  ///   floatUniforms: [0.5, 1],
   /// );
-  ///
   /// /// This [LayerBuffer] uses 'shader_bufferA.glsl' as the fragment shader
-  /// /// and 2 channels: the 1st is the buffer with id=1 (`bufferB`),
-  /// /// the 2nd uses an assets image.
+  /// /// and a channel that uses an assets image.
   /// final bufferA = LayerBuffer(
   ///   shaderAssetsName: 'assets/shaders/shader_bufferA.glsl',
   /// );
-  ///
-  /// /// Then you can optionally assign to it the input textures the fragment needs
+  /// /// Then you can optionally assign to it the input textures needed by the fragment
   /// bufferA.setChannels([
-  ///   IChannel(buffer: bufferA),
   ///   IChannel(assetsTexturePath: 'assets/bricks.jpg'),
   /// ]);
-  ///
   /// /// This [LayerBuffer] uses 'shader_bufferB.glsl' as the fragment shader
-  /// /// and `bufferA` with id=0
+  /// /// and `bufferA` as texture
   /// final bufferB = LayerBuffer(
   ///   shaderAssetsName: 'assets/shaders/shader_bufferB.glsl',
   /// ),
-  ///
   /// bufferB.setChannels([
   ///   IChannel(buffer: bufferA),
   /// ]);
   ///
   /// ShaderBuffer(
-  ///   width: 500,
-  ///   height: 300,
   ///   mainImage: mainImage,
   ///   buffers: [ bufferA, bufferB ],
   /// )
@@ -781,7 +774,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             LayoutBuilder(
               builder: (context, constraints) {
                 if (hasChildren) {
-                  // when rendering [widgets], mainImageSize will be resetted
+                  // when rendering [widgets], [mainImageSize] will be resetted
                   if (previousConstraints != constraints) {
                     // mainImageSizeChanged = false;
                     // if (state == ShaderState.paused)

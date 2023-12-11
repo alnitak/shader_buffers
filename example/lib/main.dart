@@ -26,6 +26,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     shader = shader2();
+    /// add checks to see when the pointer is in the upper left quadrand
     controller
       ..addConditionalOperation(
         (
@@ -54,26 +55,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    print('******************* Main didChangeDependencies');
-  }
-
-  @override
-  void didUpdateWidget(covariant MainApp oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    print('******************* Main didUpdateWidget');
-  }
-
-  @override
-  void didChangeMetrics() {
-    print(
-        '******************* Main didChangeMetrics ${View.of(context).physicalSize}');
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // final size = MediaQuery.sizeOf(context);
 
     return MaterialApp(
       themeMode: ThemeMode.dark,
@@ -93,8 +75,6 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                     controller: controller,
                     // width: 600,
                     // height: 400,
-                    // width: size.width,
-                    // height: size.height,
                     mainImage: shader.mainImage,
                     buffers: shader.buffers,
                     startPaused: false,

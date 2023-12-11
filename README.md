@@ -1,10 +1,18 @@
 **shader_buffers** aims to simplify the use of shaders with a focus on the ShaderToy.com website.
 
+- [Features](#Features)
+- [Getting started](#Getting-started)
+- [ShaderBuffers widget Usage](#ShaderBuffers-widget-Usage)
+  - [User interaction](#User-interaction)
+  - [Add simple check value operations](#Add-simple-check-value-operations)
+- [Additional information](#Additional-information)
+
 ## Features
 
-- Use shader output to feed other shader textures.
+- Use shader output to feed other shader textures ([memory leak issue](https://github.com/flutter/flutter/issues/138627)).
 - Feed shaders with asset images as `sampler2D uniforms`.
 - Capture user interaction.
+- Look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions and effects.
 
 Tested on Android Linux and web, on other desktops it should work. Cannot test on Mac and iOS.
 Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.
@@ -20,7 +28,7 @@ Since this package is not yet published on *pub.dev*, add it as a dependency in 
       ref: main
 ```
 
-## Usage
+## ShaderBuffers widget Usage
 
 The main widget to use is `ShaderBuffers`, which takes its size and `mainImage` as input. Optionally, you can add the `buffers`.
 
@@ -40,47 +48,81 @@ This widget provides the following uniforms to the fragment shader:
 
 To start, you can define the layers:
 ```dart
-/// The main layer which uses `shader_main.frag` as a fragment shader source
+/// The main layer uses `shader_main.frag` as fragment shader source and some float uniforms
 final mainImage = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_main.frag',
+  shaderAssetsName: 'assets/shaders/shader_main.glsl',
+  floatUniforms: [0.5, 1],
 );
-/// This [LayerBuffer] uses 'shader_bufferA.frag' as the fragment shader
-/// and 2 other channels: the 1st is the buffer with id=1 (`bufferB`),
-/// the 2nd uses an assets image.
+/// This [LayerBuffer] uses 'shader_bufferA.glsl' as the fragment shader
+/// and a channel that uses an assets image.
 final bufferA = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_bufferA.frag',
-  channels: [
-    IChannelSource(buffer: 1),
-    IChannelSource(assetsImage: 'assets/noise_color.png'),
-  ],
+  shaderAssetsName: 'assets/shaders/shader_bufferA.glsl',
 );
-/// This [LayerBuffer] uses 'shader_bufferB.frag' as the fragment shader
-/// and `bufferA` with id=0
+/// Then you can optionally assign to it the input textures needed by the fragment
+bufferA.setChannels([
+  IChannel(assetsTexturePath: 'assets/bricks.jpg'),
+]);
+/// This [LayerBuffer] uses 'shader_bufferB.glsl' as the fragment shader
+/// and `bufferA` as texture
 final bufferB = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_bufferB.frag',
-  channels: [
-    IChannelSource(buffer: 0),
-  ],
+  shaderAssetsName: 'assets/shaders/shader_bufferB.glsl',
 ),
+bufferB.setChannels([
+  IChannel(buffer: bufferA),
+]);
 ```
 Now you can use `ShaderBuffer`:
 ```dart
 ShaderBuffer(
-  width: 500,
-  height: 300,
   mainImage: mainImage,
   buffers: [ bufferA, bufferB ],
 )
 ```
 
-To achieve something similar to this flow:
+`mainImage` and `buffers` are of type `IChannel`. The latter represent the `uniform sampler2D` texture to be passed to the *fragment shader*.
+
+#### User interaction
+**ShaderBuffer** listen to the pointer with *onPointerDown*, *onPointerMove*, *onPointerUp* which give back the controller and the position in pixels. Most of the time is more usefult to have back the normalized position (in the 0~1 range) instead of pixels. This can be achived with *onPointerDownNormalized*, *onPointerMoveNormalized*, *onPointerUpNormalized* callbacks.
+With the *controller*, the one passed to *ShaderBuffer* or the one returned by the *onPointer** callbacks, is possible to do these:
+- play
+- pause
+- rewind
+- getState
+- getImouse
+- getImouseNormalized
+
+#### Add simple check value operations
+It's possible to check for some conditions. 
+- a condition is binded to a given ***LayerBuffer***.
+- the ***param*** could be:*iMouseX*, *iMouseY*, *iMouseXNormalized*, *iMouseYNormalized*, *iTime*, *iFrame*
+- ***checkType*** could be: *minor*, *major*, *equal*
+- ***checkValue*** is the value to check
+- ***operation*** is the callback that returns true of false based on the resulting check
+
+
+```dart
+controller
+  ..addConditionalOperation(
+    (
+      layerBuffer: mainImage,
+      param: Param.iMouseXNormalized,
+      checkType: CheckOperator.minor,
+      checkValue: 0.5,
+      operation: (result) {
+        /// [result] == true means (iMouseXNormalized < 0.5 )
+      },
+    ),
+  )
+```
+
+**To get something similar to this chart**
 
 <img src="https://github.com/alnitak/shader_buffers/assets/192827/4dc0f799-6109-4489-aae8-df379298c459" width="500" />
 
 ```dart
 final mainLayer = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_main.frag',
-    channels: [IChannelSource(buffer: 2)],
+    channels: [IChannel(buffer: 2)],
 );
 final bufferA = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_bufferA.frag',
@@ -88,17 +130,24 @@ final bufferA = LayerBuffer(
 final bufferB = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_bufferB.frag',
     channels: [
-      IChannelSource(buffer: 0),
+      IChannel(buffer: 0),
     ],
 );
 final bufferC = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_bufferC.frag',
     channels: [
-      IChannelSource(buffer: 0),
-      IChannelSource(buffer: 1),
-      IChannelSource(assetsImage: 'assets/bricks.jpg'),
+      IChannel(buffer: 0),
+      IChannel(buffer: 1),
+      IChannel(assetsImage: 'assets/bricks.jpg'),
     ],
 );
+mainLayer.setChannels([IChannel(buffer: bufferC)])
+bufferB.setChannels([IChannel(buffer: bufferA)]);
+bufferC.setChannels([
+  IChannel(buffer: bufferA),
+  IChannel(buffer: bufferB),
+  IChannel(assetsImage: 'assets/bricks.jpg'),
+]);
 ```
 
 
@@ -109,6 +158,9 @@ Also, the coordinate system is slightly different: the origin in ShaderToy is *b
 `vec2 uv = fragCoord.xy / iResolution.xy;`
 after this line you can add this to swap Y coordinates:
 `uv = vec2(uv.x, 1. - uv.y);`
+
+#### Writing a fragment shader
+TODO
 
 https://github.com/alnitak/shader_buffers/assets/192827/2595f3ce-3dda-4d2e-bc96-13872570dc3b
 
