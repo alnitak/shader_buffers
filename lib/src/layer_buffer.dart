@@ -110,7 +110,7 @@ class LayerBuffer {
   ui.Image? layerImage;
 
   /// Used internally when shader or channel are not yet initialized
-  ui.Image? _blankImage;
+  ui.Image? blankImage;
 
   List<void Function()> conditionalOperation = [];
 
@@ -159,7 +159,7 @@ class LayerBuffer {
       final codec = await ui.instantiateImageCodec(
         assetImageByteData.buffer.asUint8List(),
       );
-      _blankImage = (await codec.getNextFrame()).image;
+      blankImage = (await codec.getNextFrame()).image;
     } on Exception catch (e) {
       debugPrint('Cannot load blankImage! $e');
       return false;
@@ -216,15 +216,15 @@ class LayerBuffer {
     /// eventually add sampler2D uniforms
     for (var i = 0; i < (channels?.length ?? 0); i++) {
       if (channels![i].assetsTexturePath != null) {
-        _shader!.setImageSampler(i, channels![i].assetsTexture ?? _blankImage!);
+        _shader!.setImageSampler(i, channels![i].assetsTexture ?? blankImage!);
       } else if (channels![i].child != null) {
-        _shader!.setImageSampler(i, channels![i].childTexture ?? _blankImage!);
+        _shader!.setImageSampler(i, channels![i].childTexture ?? blankImage!);
       } else {
         _shader!.setImageSampler(
           i,
           channels![i].isSelf
-              ? layerImage ?? _blankImage!
-              : channels![i].buffer?.layerImage ?? _blankImage!,
+              ? layerImage ?? blankImage!
+              : channels![i].buffer?.layerImage ?? blankImage!,
         );
       }
     }

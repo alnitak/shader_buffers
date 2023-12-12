@@ -26,6 +26,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     shader = shader2();
+
     /// add checks to see when the pointer is in the upper left quadrand
     controller
       ..addConditionalOperation(
@@ -56,7 +57,6 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       themeMode: ThemeMode.dark,
       darkTheme: ThemeData.dark(useMaterial3: true),
@@ -71,13 +71,16 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               children: [
                 Align(
                   alignment: Alignment.topCenter,
-                  child: ShaderBuffers(
-                    controller: controller,
-                    // width: 600,
-                    // height: 400,
-                    mainImage: shader.mainImage,
-                    buffers: shader.buffers,
-                    startPaused: false,
+                  child: ColoredBox(
+                    color: Colors.red,
+                    child: ShaderBuffers(
+                      controller: controller,
+                      // width: 600,
+                      // height: 400,
+                      mainImage: shader.mainImage,
+                      buffers: shader.buffers,
+                      startPaused: false,
+                    ),
                   ),
                 ),
                 Wrap(
@@ -210,6 +213,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     )..setChannels(
         [
           IChannel(assetsTexturePath: 'assets/flutter.png'),
+          // IChannel(child: const Widget1()),
         ],
       );
 

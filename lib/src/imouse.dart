@@ -13,12 +13,12 @@ class IMouse {
   /// https://www.shadertoy.com/view/Mss3zH
   IMouse(this.x, this.y, this.z, this.w);
 
-  double x = 0;
-  double y = 0;
-  double z = 0;
-  double w = 0;
+  double x = 1;
+  double y = 1;
+  double z = 1;
+  double w = -1;
 
-  static IMouse zero = IMouse(0, 0, 0, 0);
+  static IMouse zero = IMouse(1, 1, 1, -1);
 
   @override
   String toString() {
