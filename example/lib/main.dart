@@ -25,7 +25,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    shader = shader2();
+    shader = shader3();
 
     /// add checks to see when the pointer is in the upper left quadrand
     controller
@@ -103,6 +103,14 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                         });
                       },
                       child: const Text('2'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          shader = shader3();
+                        });
+                      },
+                      child: const Text('3'),
                     ),
                     ValueListenableBuilder(
                       valueListenable: floatUniform,
@@ -217,6 +225,24 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         ],
       );
 
+    return (mainImage: mainLayer, buffers: []);
+  }
+
+  Layers shader3() {
+    final mainLayer = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/page_curl.frag',
+      // floatUniforms: [0.1],
+    );
+
+    // ignore: cascade_invocations
+    mainLayer.setChannels(
+      [
+        IChannel(assetsTexturePath: 'assets/flutter.png'),
+        IChannel(assetsTexturePath: 'assets/bricks.jpg'),
+        // IChannel(child: const Widget1()),
+        // IChannel(child: const Widget2()),
+      ],
+    );
     return (mainImage: mainLayer, buffers: []);
   }
 }

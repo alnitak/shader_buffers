@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shader_buffers/src/imouse.dart';
@@ -45,15 +46,15 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
   }
 
   @override
-  void updateRenderObject(BuildContext context, RenderCustomShaderPaint renderObject) {
+  void updateRenderObject(
+      BuildContext context, RenderCustomShaderPaint renderObject) {
     renderObject
-        ..mainImage
-        ..iTime = iTime
-        ..iFrame = iFrame
-        ..iMouse = iMouse
-        ..buffers = buffers;
+      ..mainImage = mainImage
+      ..iTime = iTime
+      ..iFrame = iFrame
+      ..iMouse = iMouse
+      ..buffers = buffers;
   }
-
 }
 
 ///
@@ -93,7 +94,7 @@ class RenderCustomShaderPaint extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, CustomShaderParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, CustomShaderParentData> {
-  /// Creates a render object that delegates its painting.
+  ///
   RenderCustomShaderPaint({
     required double devicePixelRatio,
     required LayerBuffer mainImage,
@@ -118,7 +119,13 @@ class RenderCustomShaderPaint extends RenderBox
       return;
     }
     _mainImage = value;
-    markNeedsLayout();
+
+    /// When the layer change, reload the shaders
+    shaderInitialized = false;
+    loadShaders().then((value) {
+      shaderInitialized = value;
+      if (value) markNeedsLayout();
+    });
   }
 
   List<LayerBuffer> get buffers => _buffers;
@@ -198,11 +205,64 @@ class RenderCustomShaderPaint extends RenderBox
     markNeedsPaint();
   }
 
+  late final TapAndPanGestureRecognizer _tapGestureRecognizer;
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
+
   @override
   bool get isRepaintBoundary => alwaysNeedsCompositing;
 
   @override
   bool get alwaysNeedsCompositing => true;
+
+  var shaderInitialized = false;
+
+  Future<bool> loadShaders() async {
+    var initialized = true;
+
+    /// Eventually dispose Layers
+    for (var i = 0; i < _buffers.length; i++) {
+      _buffers[i].dispose();
+    }
+    _mainImage.dispose();
+
+    /// Initialize layers
+    for (var i = 0; i < _buffers.length; i++) {
+      initialized &= await _buffers[i].init();
+    }
+    initialized &= await _mainImage.init();
+    shaderInitialized = initialized;
+    return initialized;
+  }
+
+  @override
+  void dispose() {
+    /// Eventually dispose Layers
+    for (var i = 0; i < _buffers.length; i++) {
+      _buffers[i].dispose();
+    }
+    _mainImage.dispose();
+    super.dispose();
+  }
+
+
+  @override
+  void detach() {
+    super.detach();
+  }
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    shaderInitialized = false;
+    loadShaders().then((value) {
+      shaderInitialized = value;
+      if (value) markNeedsLayout();
+    });
+  }
 
   @override
   void setupParentData(covariant RenderObject child) {
@@ -216,10 +276,7 @@ class RenderCustomShaderPaint extends RenderBox
     config
       ..isImage = true
       ..hint = 'Shader renderer'
-      ..textDirection = TextDirection.ltr
-      ..onTap = () {
-        print('TAPPED');
-      };
+      ..textDirection = TextDirection.ltr;
   }
 
   @override
@@ -229,20 +286,6 @@ class RenderCustomShaderPaint extends RenderBox
 
     /// firstChild is always [mainImage], the others are the buffers
     RenderBox? child = lastChild;
-    // while (child != null) {
-    //   final childParentData = child.parentData as CustomShaderParentData?;
-    //
-    //   child.layout(
-    //     BoxConstraints(maxWidth: constraints.maxWidth),
-    //     parentUsesSize: true,
-    //   );
-    //   height += child.size.height;
-    //   width = max(width, child.size.width);
-    //
-    //   child = childParentData?.nextSibling;
-    // }
-
-    var s = child?.debugDescribeChildren();
 
     Size sizeWithChildren = Size.zero;
     Size sizeWithoutChildren = Size.zero;
@@ -273,34 +316,25 @@ class RenderCustomShaderPaint extends RenderBox
 
       child = childParentData?.previousSibling;
     }
-    if (!sizeWithChildren.isEmpty)
+    if (!sizeWithChildren.isEmpty) {
       size = sizeWithChildren;
-    else
+    } else {
       size = sizeWithoutChildren;
+    }
   }
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    if (size.isEmpty) {
+    if (size.isEmpty || !shaderInitialized) {
       return;
     }
     assert(offset == Offset.zero, '');
 
     for (var i = 0; i < (buffers.length ?? 0); i++) {
-      buffers[i].computeLayer(
-        size,
-        _iTime,
-        iFrame,
-        iMouse,
-      );
+      buffers[i].computeLayer(size, iTime, iFrame, iMouse);
     }
 
-    mainImage.computeLayer(
-      size,
-      iTime,
-      iFrame,
-      iMouse,
-    );
+    mainImage.computeLayer(size, iTime, iFrame, iMouse);
 
     // defaultPaint(context, offset);
     /// Only paint firstChild which represent [mainImage]
@@ -308,7 +342,7 @@ class RenderCustomShaderPaint extends RenderBox
       context.paintChild(firstChild!, offset);
     }
     // context.canvas.drawImage(
-    //     mainImage.channels?.first.assetsTexture ?? mainImage.blankImage!,
+    //     mainImage.layerImage ?? mainImage.blankImage!,
     //     Offset.zero,
     //     Paint());
   }

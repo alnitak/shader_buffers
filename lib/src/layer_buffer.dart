@@ -152,7 +152,7 @@ class LayerBuffer {
 
   /// load the blank image and initialize all channel textures
   Future<bool> _loadIAssetsTextures() async {
-    /// setup blankImage. Displyed when the layerImage is not yet available
+    /// setup blankImage. Displayed when the layerImage is not yet available
     try {
       final assetImageByteData = await rootBundle
           .load('packages/shader_buffers/assets/blank_16x16.bmp');
@@ -244,4 +244,21 @@ class LayerBuffer {
     );
     picture.dispose();
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LayerBuffer &&
+          runtimeType == other.runtimeType &&
+          shaderAssetsName == other.shaderAssetsName &&
+          channels == other.channels &&
+          _program == other._program &&
+          _shader == other._shader;
+
+  @override
+  int get hashCode =>
+      shaderAssetsName.hashCode ^
+      channels.hashCode ^
+      _program.hashCode ^
+      _shader.hashCode;
 }
