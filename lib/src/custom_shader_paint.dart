@@ -36,7 +36,6 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
   @override
   RenderCustomShaderPaint createRenderObject(BuildContext context) {
     return RenderCustomShaderPaint(
-      devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
       mainImage: mainImage,
       buffers: buffers,
       iTime: iTime,
@@ -96,20 +95,21 @@ class RenderCustomShaderPaint extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, CustomShaderParentData> {
   ///
   RenderCustomShaderPaint({
-    required double devicePixelRatio,
     required LayerBuffer mainImage,
     required double iTime,
     required double iFrame,
     required IMouse iMouse,
     List<LayerBuffer> buffers = const [],
     Size preferredSize = Size.zero,
-  })  : _devicePixelRatio = devicePixelRatio,
-        _mainImage = mainImage,
+  })  : _mainImage = mainImage,
         _iTime = iTime,
         _iFrame = iFrame,
         _iMouse = iMouse,
         _buffers = buffers,
         _preferredSize = preferredSize;
+
+  late final TapAndPanGestureRecognizer _tapGestureRecognizer;
+  var hasChildWidgets = false;
 
   LayerBuffer get mainImage => _mainImage;
   LayerBuffer _mainImage;
@@ -157,18 +157,6 @@ class RenderCustomShaderPaint extends RenderBox
     markNeedsLayout();
   }
 
-  /// The device pixel ratio.
-  double get devicePixelRatio => _devicePixelRatio;
-  double _devicePixelRatio;
-
-  set devicePixelRatio(double value) {
-    if (value == devicePixelRatio) {
-      return;
-    }
-    _devicePixelRatio = value;
-    markNeedsCompositedLayerUpdate();
-  }
-
   double get iTime => _iTime;
   double _iTime;
 
@@ -204,8 +192,6 @@ class RenderCustomShaderPaint extends RenderBox
     // markNeedsLayout();
     markNeedsPaint();
   }
-
-  late final TapAndPanGestureRecognizer _tapGestureRecognizer;
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
@@ -248,7 +234,6 @@ class RenderCustomShaderPaint extends RenderBox
     super.dispose();
   }
 
-
   @override
   void detach() {
     super.detach();
@@ -260,7 +245,7 @@ class RenderCustomShaderPaint extends RenderBox
     shaderInitialized = false;
     loadShaders().then((value) {
       shaderInitialized = value;
-      if (value) markNeedsLayout();
+      // if (value) markNeedsLayout();
     });
   }
 
@@ -287,8 +272,9 @@ class RenderCustomShaderPaint extends RenderBox
     /// firstChild is always [mainImage], the others are the buffers
     RenderBox? child = lastChild;
 
-    Size sizeWithChildren = Size.zero;
-    Size sizeWithoutChildren = Size.zero;
+    Size sizeWithChildren = constraints.biggest;
+    Size sizeWithoutChildren = constraints.biggest;
+    hasChildWidgets = false;
     while (child != null) {
       final childParentData = child.parentData as CustomShaderParentData?;
 
@@ -304,6 +290,7 @@ class RenderCustomShaderPaint extends RenderBox
         );
         sizeWithoutChildren = Size(constraints.maxWidth, constraints.maxHeight);
       } else {
+        hasChildWidgets = true;
         child.layout(
           BoxConstraints(
             maxWidth: constraints.maxWidth,
@@ -316,7 +303,7 @@ class RenderCustomShaderPaint extends RenderBox
 
       child = childParentData?.previousSibling;
     }
-    if (!sizeWithChildren.isEmpty) {
+    if (hasChildWidgets) {
       size = sizeWithChildren;
     } else {
       size = sizeWithoutChildren;
@@ -336,14 +323,24 @@ class RenderCustomShaderPaint extends RenderBox
 
     mainImage.computeLayer(size, iTime, iFrame, iMouse);
 
-    // defaultPaint(context, offset);
     /// Only paint firstChild which represent [mainImage]
-    if (firstChild != null) {
-      context.paintChild(firstChild!, offset);
+    RenderBox? child = firstChild;
+
+    /// Cycle from the first child, if exists, to the last, to mark
+    /// them to be painted
+    if (hasChildWidgets) {
+      while (child != null) {
+        final childParentData = child.parentData as CustomShaderParentData?;
+        context.paintChild(child, offset);
+        child = childParentData?.nextSibling;
+      }
     }
-    // context.canvas.drawImage(
-    //     mainImage.layerImage ?? mainImage.blankImage!,
-    //     Offset.zero,
-    //     Paint());
+    context.canvas.drawImage(
+        mainImage.layerImage ?? mainImage.blankImage!, Offset.zero, Paint());
+    // paintImage(
+    //   canvas: context.canvas,
+    //   rect: offset & size,
+    //   image: mainImage.layerImage ?? mainImage.blankImage!,
+    // );
   }
 }

@@ -25,7 +25,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    shader = shader3();
+    shader = shader1();
 
     /// add checks to see when the pointer is in the upper left quadrand
     controller

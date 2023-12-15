@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:shader_buffers/src/animated_sampler.dart';
+import 'package:shader_buffers/src/custom_child.dart';
 import 'package:shader_buffers/src/custom_shader_paint.dart';
 import 'package:shader_buffers/src/imouse.dart';
 import 'package:shader_buffers/src/layer_buffer.dart';
@@ -131,7 +131,7 @@ class ShaderController {
   /// play
   void play() => _play?.call();
 
-  /// reset time to zero
+  /// reset iTime and iFrameto zero
   void rewind() => _rewind?.call();
 
   /// return the state
@@ -261,6 +261,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   late Offset startingPosition;
   late bool hasChildren;
   late BoxConstraints previousConstraints;
+  final layers = <Widget>[];
 
   @override
   void initState() {
@@ -275,8 +276,6 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     iFrame = 0;
     iTime = Stopwatch();
     ticker = createTicker(tick);
-
-    // init();
 
     if (!widget.startPaused) {
       _play();
@@ -295,6 +294,9 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       _getIMouseNormalized,
     );
 
+    addChildrenLayers();
+
+    // Add the additional operations after the 1st frame built
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       /// eventually add the operations added before putting this
       /// in the widgets tree
@@ -305,6 +307,49 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         widget.controller.conditionalOperation.clear();
       }
     });
+  }
+
+  /// Add the children of all [IChannel](s)
+  /// If an [IChannel] has a child, add it using [CustomChildBuilder] else
+  /// using a [RawImage] of the computed shader image
+  void addChildrenLayers() {
+    /// The [layers] list contains at first the [mainImage] and then all the
+    /// [buffer] [IChannel]s.
+    /// The size of the main widget displayed is relative to the first child
+    /// in this list. If there are no children, the size is taken from
+    /// parent constraints.
+    layers.clear();
+    for (var i = (widget.mainImage.channels?.length ?? 0) - 1; i >= 0; i--) {
+      if (widget.mainImage.channels![i].child != null) {
+        layers.add(
+          CustomChildBuilder(
+            layerChannel: widget.mainImage.channels![i],
+            enabled: state == ShaderState.playing,
+            child: widget.mainImage.channels![i].child,
+          ),
+        );
+      } else {
+        layers.add(RawImage(image: widget.mainImage.layerImage));
+      }
+    }
+
+    for (var n = 0; n < (widget.buffers?.length ?? 0); n++) {
+      for (var i = (widget.buffers?[n].channels?.length ?? 0) - 1;
+          i >= 0;
+          i--) {
+        if (widget.buffers![n].channels![i].child != null) {
+          layers.add(
+            CustomChildBuilder(
+              layerChannel: widget.buffers![n].channels![i],
+              enabled: state == ShaderState.playing,
+              child: widget.buffers![n].channels![i].child,
+            ),
+          );
+        } else {
+          layers.add(RawImage(image: widget.buffers![n].layerImage));
+        }
+      }
+    }
   }
 
   void _pause() {
@@ -324,10 +369,17 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     }
   }
 
-  void _rewind() {}
+  void _rewind() {
+    iMouse
+      ..start(startingPosition)
+      ..end();
+    iFrame = 0;
+    iTime.reset();
+  }
 
   ShaderState _getState() => state;
 
+  /// Add the callback function operations.
   void _addConditionalOperation(Operation p) {
     switch (p.param) {
       case Param.iMouseX:
@@ -504,54 +556,16 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     if (context.mounted) setState(() {});
   }
 
-  // void setIMouse() {
-  //   if (mainImageSize == null) return;
-  //   iMouse = IMouseController(
-  //     width: mainImageSize!.width,
-  //     height: mainImageSize!.height,
-  //   );
-  //   iMouse.iMouse.x = mainImageSize!.width / 2;
-  //   iMouse.iMouse.y = mainImageSize!.height / 2;
-  //   iMouse.iMouse.z = -iMouse.iMouse.x;
-  //   iMouse.iMouse.w = -iMouse.iMouse.y;
-  // }
-
   @override
   Widget build(BuildContext context) {
-    final widgets = <Widget>[];
-
-    /// If [mainImage] uses widgets, put them into the
-    /// three widgets using [AnimatedSampler]
-    for (var i = 0; i < (widget.mainImage.channels?.length ?? 0); i++) {
-      if (widget.mainImage.channels![i].child != null) {
-        widgets.add(widget.mainImage.channels![i].child!);
-      }
-      if (widget.mainImage.channels![i].assetsTexturePath != null) {
-        widgets.add(RawImage(image: widget.mainImage.layerImage));
-      }
-    }
-
-    /// If some buffers uses widgets, put them into the
-    /// three widgets using [AnimatedSampler]
-    for (var n = 0; n < (widget.buffers?.length ?? 1); n++) {
-      for (var i = 0; i < (widget.buffers?[n].channels?.length ?? 0); i++) {
-        if (widget.buffers![n].channels![i].child != null) {
-          widgets.add(widget.buffers![n].channels![i].child!);
-        }
-        if (widget.buffers![n].channels![i].assetsTexturePath != null) {
-          widgets.add(RawImage(image: widget.buffers![n].layerImage));
-        }
-      }
-    }
-
     return Listener(
       onPointerDown: (details) {
         if (state == ShaderState.playing) {
           iMouse.start(details.localPosition);
         }
         startingPosition = details.localPosition;
-        widget.onPointerDown?.call(
-            widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
+        widget.onPointerDown
+            ?.call(widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerDownNormalized?.call(
           widget.controller,
           () {
@@ -564,8 +578,8 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         if (state == ShaderState.playing) {
           iMouse.update(details.localPosition);
         }
-        widget.onPointerMove?.call(
-            widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
+        widget.onPointerMove
+            ?.call(widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerMoveNormalized?.call(
           widget.controller,
           () {
@@ -578,8 +592,8 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         if (state == ShaderState.playing) {
           iMouse.end();
         }
-        widget.onPointerUp?.call(
-            widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
+        widget.onPointerUp
+            ?.call(widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerUpNormalized?.call(
           widget.controller,
           () {
@@ -592,8 +606,8 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         if (state == ShaderState.playing) {
           iMouse.end();
         }
-        widget.onPointerUp?.call(
-            widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
+        widget.onPointerUp
+            ?.call(widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerUpNormalized?.call(
           widget.controller,
           () {
@@ -609,7 +623,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
           iTime: iTime.elapsedMilliseconds / 1000.0,
           iFrame: iFrame,
           iMouse: iMouse.iMouse,
-          children: widgets,
+          children: layers,
         ),
       ),
     );
