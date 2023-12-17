@@ -1,5 +1,3 @@
-// ignore_for_file: omit_local_variable_types
-
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -10,27 +8,42 @@ import 'package:flutter/widgets.dart';
 import 'package:shader_buffers/src/imouse.dart';
 import 'package:shader_buffers/src/layer_buffer.dart';
 
+typedef ShaderBuilder = void Function(Size size);
+
 ///
 class CustomShaderPaint extends MultiChildRenderObjectWidget {
-  /// Creates a widget that delegates its painting.
+  /// Creates a widget that delegates shader layers painting.
   const CustomShaderPaint({
     required this.mainImage,
+    required this.buffers,
     required this.iTime,
     required this.iFrame,
     required this.iMouse,
-    required this.buffers,
+    this.builder,
+    this.relayout = 0,
     super.key,
     super.children,
   });
 
-  /// Main layer shader.
+  /// Mark need layout. Used ie when rewind shader
+  final int? relayout;
+
+  /// Callback which return this widget size
+  final ShaderBuilder? builder;
+
+  /// Main layer shader. The result of this is the one displayed by this widget.
   final LayerBuffer mainImage;
 
   /// Other optional channels.
   final List<LayerBuffer> buffers;
 
+  /// The time since the shader was started
   final double iTime;
+
+  /// The actual frame number since the shader was started
   final double iFrame;
+
+  /// Current mouse gesture
   final IMouse iMouse;
 
   @override
@@ -41,6 +54,8 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
       iTime: iTime,
       iFrame: iFrame,
       iMouse: iMouse,
+      builder: builder,
+      relayout: relayout!,
     );
   }
 
@@ -52,38 +67,13 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
       ..iTime = iTime
       ..iFrame = iFrame
       ..iMouse = iMouse
-      ..buffers = buffers;
+      ..buffers = buffers
+      ..builder = builder
+      ..relayout = relayout!;
   }
 }
 
-///
-// class CustomExpandedShader extends ParentDataWidget<CustomShaderParentData> {
-//   ///
-//   const CustomExpandedShader({
-//     required super.child,
-//     this.flex = 1,
-//     super.key,
-//   }) : assert(flex > 0, '');
-
-//   final int flex;
-
-//   @override
-//   void applyParentData(RenderObject renderObject) {
-//     final parentData = renderObject.parentData as CustomShaderParentData?;
-
-//     if (parentData != null && parentData.flex != flex) {
-//       parentData.flex = flex;
-//       final targetObject = renderObject.parent;
-//       if (targetObject is RenderObject) {
-//         targetObject.markNeedsLayout();
-//       }
-//     }
-//   }
-
-//   @override
-//   Type get debugTypicalAncestorWidgetClass => CustomShaderPaint;
-// }
-
+/// TODO: remove this
 class CustomShaderParentData extends ContainerBoxParentData<RenderBox> {
   int? flex;
 }
@@ -99,17 +89,40 @@ class RenderCustomShaderPaint extends RenderBox
     required double iTime,
     required double iFrame,
     required IMouse iMouse,
+    required int relayout,
     List<LayerBuffer> buffers = const [],
-    Size preferredSize = Size.zero,
+    ShaderBuilder? builder,
   })  : _mainImage = mainImage,
         _iTime = iTime,
         _iFrame = iFrame,
         _iMouse = iMouse,
         _buffers = buffers,
-        _preferredSize = preferredSize;
+        _builder = builder,
+        _relayout = relayout;
 
   late final TapAndPanGestureRecognizer _tapGestureRecognizer;
   var hasChildWidgets = false;
+
+  int get relayout => _relayout;
+  int _relayout;
+
+  set relayout(int value) {
+    if (relayout == value) {
+      return;
+    }
+    _relayout = value;
+    markNeedsLayout();
+  }
+
+  ShaderBuilder? get builder => _builder;
+  ShaderBuilder? _builder;
+
+  set builder(ShaderBuilder? value) {
+    if (builder == value) {
+      return;
+    }
+    _builder = value;
+  }
 
   LayerBuffer get mainImage => _mainImage;
   LayerBuffer _mainImage;
@@ -136,24 +149,6 @@ class RenderCustomShaderPaint extends RenderBox
       return;
     }
     _buffers = value;
-    markNeedsLayout();
-  }
-
-  /// The size that this [RenderCustomShaderPaint] should aim for, given
-  /// the layout constraints, if there is no child.
-  ///
-  /// Defaults to [Size.zero].
-  ///
-  /// If there's a child, this is ignored, and the size of the child is used
-  /// instead.
-  Size get preferredSize => _preferredSize;
-  Size _preferredSize;
-
-  set preferredSize(Size value) {
-    if (preferredSize == value) {
-      return;
-    }
-    _preferredSize = value;
     markNeedsLayout();
   }
 
@@ -206,6 +201,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   var shaderInitialized = false;
 
+  /// Initialize all the shaders used
   Future<bool> loadShaders() async {
     var initialized = true;
 
@@ -234,10 +230,10 @@ class RenderCustomShaderPaint extends RenderBox
     super.dispose();
   }
 
-  @override
-  void detach() {
-    super.detach();
-  }
+  // @override
+  // void detach() {
+  //   super.detach();
+  // }
 
   @override
   void attach(PipelineOwner owner) {
@@ -245,7 +241,6 @@ class RenderCustomShaderPaint extends RenderBox
     shaderInitialized = false;
     loadShaders().then((value) {
       shaderInitialized = value;
-      // if (value) markNeedsLayout();
     });
   }
 
@@ -308,6 +303,7 @@ class RenderCustomShaderPaint extends RenderBox
     } else {
       size = sizeWithoutChildren;
     }
+    _builder?.call(size);
   }
 
   @override
@@ -337,10 +333,21 @@ class RenderCustomShaderPaint extends RenderBox
     }
     context.canvas.drawImage(
         mainImage.layerImage ?? mainImage.blankImage!, Offset.zero, Paint());
+    /// If we will want to have some fan..
     // paintImage(
     //   canvas: context.canvas,
     //   rect: offset & size,
     //   image: mainImage.layerImage ?? mainImage.blankImage!,
     // );
+
+    // if (mainImage.layerImage != null) {
+    //   mainImage.layerImage!.toByteData(format: ui.ImageByteFormat.png)
+    //   .then((value) {
+    //     if (value != null) {
+    //       File('/home/deimos/pppp.png')
+    //         .writeAsBytesSync(value.buffer.asUint8List());
+    //     }
+    //   });
+    // }
   }
 }

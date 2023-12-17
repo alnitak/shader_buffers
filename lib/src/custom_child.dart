@@ -4,13 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:shader_buffers/src/layer_buffer.dart';
 
-///
+/// RenderBox which allow to store the snapshot of its child
+/// into [layerChannel.childTexture] to be used as texture.
+/// When enable the snapshot is performed otherwise the child
+/// acts normal.
 class CustomChildBuilder extends SingleChildRenderObjectWidget {
+  ///
   const CustomChildBuilder({
-        super.child,
-        required this.layerChannel,
-        required this.enabled,
-      });
+    required this.enabled,
+    required this.layerChannel,
+    super.child,
+    super.key,
+  });
 
   final bool enabled;
   final IChannel layerChannel;
@@ -34,8 +39,6 @@ class CustomChildBuilder extends SingleChildRenderObjectWidget {
   }
 }
 
-
-
 ///
 class _RenderCustomChildWidget extends RenderProxyBox {
   ///
@@ -50,6 +53,7 @@ class _RenderCustomChildWidget extends RenderProxyBox {
   /// The device pixel ratio used to create the child image.
   double get devicePixelRatio => _devicePixelRatio;
   double _devicePixelRatio;
+
   set devicePixelRatio(double value) {
     if (value == devicePixelRatio) {
       return;
@@ -60,6 +64,7 @@ class _RenderCustomChildWidget extends RenderProxyBox {
 
   bool get enabled => _enabled;
   bool _enabled;
+
   set enabled(bool value) {
     if (value == enabled) {
       return;
@@ -72,6 +77,7 @@ class _RenderCustomChildWidget extends RenderProxyBox {
   ///
   IChannel get layerChannel => _layerChannel;
   IChannel _layerChannel;
+
   set layerChannel(IChannel value) {
     if (value == layerChannel) {
       return;
@@ -89,9 +95,7 @@ class _RenderCustomChildWidget extends RenderProxyBox {
   @override
   OffsetLayer updateCompositedLayer(
       {required covariant _CustomChildLayer? oldLayer}) {
-    final _CustomChildLayer layer =
-        oldLayer ?? _CustomChildLayer(layerChannel);
-    layer
+    final layer = (oldLayer ?? _CustomChildLayer(layerChannel))
       ..size = size
       ..devicePixelRatio = devicePixelRatio;
     return layer;
@@ -102,16 +106,12 @@ class _RenderCustomChildWidget extends RenderProxyBox {
     if (size.isEmpty) {
       return;
     }
-    assert(!_enabled || offset == Offset.zero);
+    assert(!_enabled || offset == Offset.zero, '');
     return super.paint(context, offset);
   }
 }
 
-
-
-
-
-/// 
+/// The layer that creates and save the [ui.Image] into the  [layerChannel]
 class _CustomChildLayer extends OffsetLayer {
   _CustomChildLayer(this._layerChannel);
 
@@ -119,6 +119,7 @@ class _CustomChildLayer extends OffsetLayer {
 
   Size get size => _size;
   Size _size = Size.zero;
+
   set size(Size value) {
     if (value == size) {
       return;
@@ -129,6 +130,7 @@ class _CustomChildLayer extends OffsetLayer {
 
   double get devicePixelRatio => _devicePixelRatio;
   double _devicePixelRatio = 1.0;
+
   set devicePixelRatio(double value) {
     if (value == devicePixelRatio) {
       return;
@@ -139,6 +141,7 @@ class _CustomChildLayer extends OffsetLayer {
 
   IChannel get layerChannel => _layerChannel;
   IChannel _layerChannel;
+
   set layerChannel(IChannel value) {
     if (value == layerChannel) {
       return;
@@ -148,16 +151,16 @@ class _CustomChildLayer extends OffsetLayer {
   }
 
   ui.Image _buildChildScene(Rect bounds, double pixelRatio) {
-    final ui.SceneBuilder builder = ui.SceneBuilder();
-    final Matrix4 transform =
-    Matrix4.diagonal3Values(pixelRatio, pixelRatio, 1);
+    final builder = ui.SceneBuilder();
+    final transform =
+        Matrix4.diagonal3Values(pixelRatio, pixelRatio, 1);
     builder.pushTransform(transform.storage);
     addChildrenToScene(builder);
     builder.pop();
     return builder.build().toImageSync(
-      (pixelRatio * bounds.width).ceil(),
-      (pixelRatio * bounds.height).ceil(),
-    );
+          (pixelRatio * bounds.width).ceil(),
+          (pixelRatio * bounds.height).ceil(),
+        );
   }
 
   @override
@@ -169,18 +172,18 @@ class _CustomChildLayer extends OffsetLayer {
   @override
   void addToScene(ui.SceneBuilder builder) {
     if (size.isEmpty) return;
-    final ui.Image image = _buildChildScene(
+    final image = _buildChildScene(
       offset & size,
       devicePixelRatio,
     );
-    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
     try {
       _layerChannel.childTexture = image.clone();
     } finally {
       image.dispose();
     }
-    final ui.Picture picture = pictureRecorder.endRecording();
+    final picture = pictureRecorder.endRecording();
     _lastPicture?.dispose();
     _lastPicture = picture;
     builder.addPicture(offset, picture);
