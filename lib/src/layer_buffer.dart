@@ -221,16 +221,6 @@ class LayerBuffer {
         _shader!.setImageSampler(i, channels![i].assetsTexture ?? blankImage!);
       } else if (channels![i].child != null) {
         _shader!.setImageSampler(i, channels![i].childTexture ?? blankImage!);
-        // if (i==1 && channels![i].childTexture != null) {
-        //   var b = channels![i]
-        //       .childTexture!
-        //       .toByteData(format: ImageByteFormat.png)
-        //       .then((value) {
-        //     if (value == null) return;
-        //     File f = File('/home/deimos/ppp-$i.png');
-        //     f.writeAsBytesSync(value.buffer.asUint8List(), flush: true);
-        //   });
-        // }
       } else {
         _shader!.setImageSampler(
           i,

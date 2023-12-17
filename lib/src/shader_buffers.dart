@@ -331,7 +331,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
           ),
         );
       } else {
-        layers.add(RawImage(image: widget.mainImage.layerImage));
+        layers.add(RawImage(image: widget.mainImage.layerImage?.clone()));
       }
     }
 
@@ -348,7 +348,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             ),
           );
         } else {
-          layers.add(RawImage(image: widget.buffers![n].layerImage));
+          layers.add(RawImage(image: widget.buffers![n].layerImage?.clone()));
         }
       }
     }

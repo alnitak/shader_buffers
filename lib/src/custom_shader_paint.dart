@@ -121,6 +121,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   int get relayout => _relayout;
   int _relayout;
+
   set relayout(int value) {
     if (relayout == value) {
       return;
@@ -131,6 +132,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   ShaderBuilder? get builder => _builder;
   ShaderBuilder? _builder;
+
   set builder(ShaderBuilder? value) {
     if (builder == value) {
       return;
@@ -140,6 +142,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   LayerBuffer get mainImage => _mainImage;
   LayerBuffer _mainImage;
+
   set mainImage(LayerBuffer value) {
     if (mainImage == value) {
       return;
@@ -156,6 +159,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   List<LayerBuffer> get buffers => _buffers;
   List<LayerBuffer> _buffers;
+
   set buffers(List<LayerBuffer> value) {
     if (buffers == value) {
       return;
@@ -166,6 +170,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   double get iTime => _iTime;
   double _iTime;
+
   set iTime(double value) {
     if (_iTime == value) {
       return;
@@ -177,6 +182,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   double get iFrame => _iFrame;
   double _iFrame;
+
   set iFrame(double value) {
     if (iFrame == value) {
       return;
@@ -188,6 +194,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   IMouse get iMouse => _iMouse;
   IMouse _iMouse;
+
   set iMouse(IMouse value) {
     if (iMouse == value) {
       return;
@@ -199,6 +206,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   double? get width => _width;
   double? _width;
+
   set width(double? value) {
     if (width == value) {
       return;
@@ -209,6 +217,7 @@ class RenderCustomShaderPaint extends RenderBox
 
   double? get height => _height;
   double? _height;
+
   set height(double? value) {
     if (height == value) {
       return;
@@ -290,33 +299,38 @@ class RenderCustomShaderPaint extends RenderBox
 
   @override
   void performLayout() {
+    /// TODO: test for different parent layout (ie inside column)
     /// firstChild is always [mainImage], the others are the buffers
     RenderBox? child = lastChild;
+
+    double w = width ?? constraints.maxWidth;
+    double h = height ?? constraints.maxHeight;
+    if (w > constraints.maxWidth) w = constraints.maxWidth;
+    if (h > constraints.maxHeight) h = constraints.maxHeight;
 
     Size sizeWithChildren = constraints.biggest;
     Size sizeWithoutChildren = constraints.biggest;
     hasChildWidgets = false;
+
+
+    /// Loop from last [buffer] to the first and then [mainImage] as
+    /// passed to this RenderBox.
+    /// Get the widget size:
+    /// - if there is a child widget, get the first and give it to this widget
+    /// - if there are only images, the first is the resulting size
     while (child != null) {
       final childParentData = child.parentData as CustomShaderParentData?;
 
       if (child is RenderImage) {
         child.layout(
-          BoxConstraints(
-            maxWidth: width ?? constraints.maxWidth,
-            maxHeight: height ?? constraints.maxHeight,
-            minWidth: width ?? constraints.maxWidth,
-            minHeight: height ?? constraints.maxHeight,
-          ),
+          BoxConstraints(maxWidth: w, maxHeight: h, minWidth: w, minHeight: h),
           parentUsesSize: true,
         );
-        sizeWithoutChildren = Size(width ?? constraints.maxWidth, height ?? constraints.maxHeight);
+        sizeWithoutChildren = Size(w, h);
       } else {
         hasChildWidgets = true;
         child.layout(
-          BoxConstraints(
-            maxWidth: width ?? constraints.maxWidth,
-            maxHeight: height ?? constraints.maxHeight,
-          ),
+          BoxConstraints(maxWidth: w, maxHeight: h),
           parentUsesSize: true,
         );
         sizeWithChildren = child.size;
@@ -324,11 +338,13 @@ class RenderCustomShaderPaint extends RenderBox
 
       child = childParentData?.previousSibling;
     }
+
     if (hasChildWidgets) {
       size = sizeWithChildren;
     } else {
       size = sizeWithoutChildren;
     }
+
     _builder?.call(size);
   }
 
@@ -359,6 +375,7 @@ class RenderCustomShaderPaint extends RenderBox
     }
     context.canvas.drawImage(
         mainImage.layerImage ?? mainImage.blankImage!, Offset.zero, Paint());
+
     /// If we will want to have some fan..
     // paintImage(
     //   canvas: context.canvas,

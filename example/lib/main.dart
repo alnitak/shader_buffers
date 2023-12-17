@@ -71,15 +71,21 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              Center(
-                child: ShaderBuffers(
-                  controller: controller,
-                  width: 200,
-                  height: 200,
-                  mainImage: shader.mainImage,
-                  buffers: shader.buffers,
-                  startPaused: false,
-                ),
+              ListView.builder(
+                itemCount: 20,
+                itemBuilder: (_, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ShaderBuffers(
+                      controller: controller,
+                      // width: 250,
+                      height: 100,
+                      mainImage: shader.mainImage,
+                      buffers: shader.buffers,
+                      startPaused: false,
+                    ),
+                  );
+                },
               ),
               Wrap(
                 alignment: WrapAlignment.center,
