@@ -71,12 +71,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              Align(
-                alignment: Alignment.center,
+              Center(
                 child: ShaderBuffers(
                   controller: controller,
-                  // width: 600,
-                  // height: 400,
+                  width: 200,
+                  height: 200,
                   mainImage: shader.mainImage,
                   buffers: shader.buffers,
                   startPaused: false,

@@ -378,7 +378,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     iFrame = 0;
     iTime.reset();
     if (state == ShaderState.paused) {
-      Future.delayed(Duration.zero, (){
+      Future.delayed(Duration.zero, () {
         relayout.value = DateTime.now().millisecondsSinceEpoch;
       });
     }
@@ -687,10 +687,15 @@ class _ShaderBuffersState extends State<ShaderBuffers>
               iTime: iTime.elapsedMilliseconds / 1000.0,
               iFrame: iFrame,
               iMouse: iMouse.iMouse,
+              width: widget.width,
+              height: widget.height,
               relayout: __,
               builder: (size) {
-                iMouse =
-                    IMouseController(width: size.width, height: size.height);
+                /// CustomShaderPaint has been laid out, set iMouse window size
+                iMouse = IMouseController(
+                  width: size.width,
+                  height: size.height,
+                );
               },
               children: layers,
             );

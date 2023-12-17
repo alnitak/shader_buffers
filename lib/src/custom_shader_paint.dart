@@ -19,16 +19,18 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
     required this.iTime,
     required this.iFrame,
     required this.iMouse,
+    this.width,
+    this.height,
     this.builder,
     this.relayout = 0,
     super.key,
     super.children,
   });
 
-  /// Mark need layout. Used ie when rewind shader
+  /// Mark need layout. Used ie when rewind shader.
   final int? relayout;
 
-  /// Callback which return this widget size
+  /// Callback which return this widget size.
   final ShaderBuilder? builder;
 
   /// Main layer shader. The result of this is the one displayed by this widget.
@@ -37,14 +39,20 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
   /// Other optional channels.
   final List<LayerBuffer> buffers;
 
-  /// The time since the shader was started
+  /// The time since the shader was started.
   final double iTime;
 
-  /// The actual frame number since the shader was started
+  /// The actual frame number since the shader was started.
   final double iFrame;
 
-  /// Current mouse gesture
+  /// Current mouse gesture.
   final IMouse iMouse;
+
+  /// Widget width.
+  final double? width;
+
+  /// Widget height.
+  final double? height;
 
   @override
   RenderCustomShaderPaint createRenderObject(BuildContext context) {
@@ -54,6 +62,8 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
       iTime: iTime,
       iFrame: iFrame,
       iMouse: iMouse,
+      width: width,
+      height: height,
       builder: builder,
       relayout: relayout!,
     );
@@ -67,6 +77,8 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
       ..iTime = iTime
       ..iFrame = iFrame
       ..iMouse = iMouse
+      ..width = width
+      ..height = height
       ..buffers = buffers
       ..builder = builder
       ..relayout = relayout!;
@@ -90,12 +102,16 @@ class RenderCustomShaderPaint extends RenderBox
     required double iFrame,
     required IMouse iMouse,
     required int relayout,
+    double? width,
+    double? height,
     List<LayerBuffer> buffers = const [],
     ShaderBuilder? builder,
   })  : _mainImage = mainImage,
         _iTime = iTime,
         _iFrame = iFrame,
         _iMouse = iMouse,
+        _width = width,
+        _height = height,
         _buffers = buffers,
         _builder = builder,
         _relayout = relayout;
@@ -105,7 +121,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   int get relayout => _relayout;
   int _relayout;
-
   set relayout(int value) {
     if (relayout == value) {
       return;
@@ -116,7 +131,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   ShaderBuilder? get builder => _builder;
   ShaderBuilder? _builder;
-
   set builder(ShaderBuilder? value) {
     if (builder == value) {
       return;
@@ -126,7 +140,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   LayerBuffer get mainImage => _mainImage;
   LayerBuffer _mainImage;
-
   set mainImage(LayerBuffer value) {
     if (mainImage == value) {
       return;
@@ -143,7 +156,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   List<LayerBuffer> get buffers => _buffers;
   List<LayerBuffer> _buffers;
-
   set buffers(List<LayerBuffer> value) {
     if (buffers == value) {
       return;
@@ -154,7 +166,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   double get iTime => _iTime;
   double _iTime;
-
   set iTime(double value) {
     if (_iTime == value) {
       return;
@@ -166,7 +177,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   double get iFrame => _iFrame;
   double _iFrame;
-
   set iFrame(double value) {
     if (iFrame == value) {
       return;
@@ -178,7 +188,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   IMouse get iMouse => _iMouse;
   IMouse _iMouse;
-
   set iMouse(IMouse value) {
     if (iMouse == value) {
       return;
@@ -186,6 +195,26 @@ class RenderCustomShaderPaint extends RenderBox
     _iMouse = value;
     // markNeedsLayout();
     markNeedsPaint();
+  }
+
+  double? get width => _width;
+  double? _width;
+  set width(double? value) {
+    if (width == value) {
+      return;
+    }
+    _width = value;
+    markNeedsLayout();
+  }
+
+  double? get height => _height;
+  double? _height;
+  set height(double? value) {
+    if (height == value) {
+      return;
+    }
+    _height = value;
+    markNeedsLayout();
   }
 
   @override
@@ -261,9 +290,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   @override
   void performLayout() {
-    double width = 0;
-    double height = 0;
-
     /// firstChild is always [mainImage], the others are the buffers
     RenderBox? child = lastChild;
 
@@ -276,20 +302,20 @@ class RenderCustomShaderPaint extends RenderBox
       if (child is RenderImage) {
         child.layout(
           BoxConstraints(
-            maxWidth: constraints.maxWidth,
-            maxHeight: constraints.maxHeight,
-            minWidth: constraints.maxWidth,
-            minHeight: constraints.maxHeight,
+            maxWidth: width ?? constraints.maxWidth,
+            maxHeight: height ?? constraints.maxHeight,
+            minWidth: width ?? constraints.maxWidth,
+            minHeight: height ?? constraints.maxHeight,
           ),
           parentUsesSize: true,
         );
-        sizeWithoutChildren = Size(constraints.maxWidth, constraints.maxHeight);
+        sizeWithoutChildren = Size(width ?? constraints.maxWidth, height ?? constraints.maxHeight);
       } else {
         hasChildWidgets = true;
         child.layout(
           BoxConstraints(
-            maxWidth: constraints.maxWidth,
-            maxHeight: constraints.maxHeight,
+            maxWidth: width ?? constraints.maxWidth,
+            maxHeight: height ?? constraints.maxHeight,
           ),
           parentUsesSize: true,
         );
