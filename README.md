@@ -6,13 +6,14 @@
   - [User interaction](#User-interaction)
   - [Add simple check value operations](#Add-simple-check-value-operations)
 - [Additional information](#Additional-information)
+  - [Writing a fragment shader (TODO)](#Writing-a-fragment-shader)
 
 ## Features
 
 - Use shader output to feed other shader textures ([memory leak issue](https://github.com/flutter/flutter/issues/138627)).
-- Feed shaders with asset images as `sampler2D uniforms`.
+- Feed shaders with asset images or any widgets as `sampler2D uniforms`.
 - Capture user interaction.
-- Look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions and effects.
+- Look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions (from [gl-transitions](https://gl-transitions.com/)) or [ShaderToy](https://www.shadertoy.com/)) and effects.
 
 Tested on Android Linux and web, on other desktops it should work. Cannot test on Mac and iOS.
 Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.

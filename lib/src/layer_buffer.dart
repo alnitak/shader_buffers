@@ -121,16 +121,6 @@ class LayerBuffer {
     channels = chan.toList();
   }
 
-  /// swap channels
-  void swapChannels(int index1, int index2) {
-    if (channels?.isEmpty ?? true) return;
-    RangeError.checkValidIndex(index1, channels, 'index1');
-    RangeError.checkValidIndex(index2, channels, 'index2');
-    final tmp = channels![index1];
-    channels![index1] = channels![index2];
-    channels![index2] = tmp;
-  }
-
   /// Initialize the shader and the textures if any
   Future<bool> init() async {
     var loaded = true;

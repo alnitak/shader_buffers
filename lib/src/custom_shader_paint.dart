@@ -121,7 +121,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   int get relayout => _relayout;
   int _relayout;
-
   set relayout(int value) {
     if (relayout == value) {
       return;
@@ -132,7 +131,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   ShaderBuilder? get builder => _builder;
   ShaderBuilder? _builder;
-
   set builder(ShaderBuilder? value) {
     if (builder == value) {
       return;
@@ -142,7 +140,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   LayerBuffer get mainImage => _mainImage;
   LayerBuffer _mainImage;
-
   set mainImage(LayerBuffer value) {
     if (mainImage == value) {
       return;
@@ -159,7 +156,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   List<LayerBuffer> get buffers => _buffers;
   List<LayerBuffer> _buffers;
-
   set buffers(List<LayerBuffer> value) {
     if (buffers == value) {
       return;
@@ -170,7 +166,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   double get iTime => _iTime;
   double _iTime;
-
   set iTime(double value) {
     if (_iTime == value) {
       return;
@@ -182,7 +177,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   double get iFrame => _iFrame;
   double _iFrame;
-
   set iFrame(double value) {
     if (iFrame == value) {
       return;
@@ -194,7 +188,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   IMouse get iMouse => _iMouse;
   IMouse _iMouse;
-
   set iMouse(IMouse value) {
     if (iMouse == value) {
       return;
@@ -206,7 +199,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   double? get width => _width;
   double? _width;
-
   set width(double? value) {
     if (width == value) {
       return;
@@ -217,7 +209,6 @@ class RenderCustomShaderPaint extends RenderBox
 
   double? get height => _height;
   double? _height;
-
   set height(double? value) {
     if (height == value) {
       return;
@@ -376,7 +367,7 @@ class RenderCustomShaderPaint extends RenderBox
     context.canvas.drawImage(
         mainImage.layerImage ?? mainImage.blankImage!, Offset.zero, Paint());
 
-    /// If we will want to have some fan..
+    /// If we will want to have some fun..
     // paintImage(
     //   canvas: context.canvas,
     //   rect: offset & size,

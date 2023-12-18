@@ -19,44 +19,13 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   ValueNotifier<(double a, double b, double c)> floatUniform =
       ValueNotifier((0.6, 8.0, 1.0));
   ValueNotifier<bool> operations = ValueNotifier<bool>(false);
-  final controller = ShaderController();
   final List<bool> ops = [false, false];
+  ShaderController controller = ShaderController();
 
   @override
   void initState() {
     super.initState();
-    shader = shader3();
-
-    /// add checks to see when the pointer is in the upper left quadrand
-    controller.addConditionalOperation(
-      (
-        layerBuffer: shader.mainImage,
-        param: Param.iMouseXNormalized,
-        checkType: CheckOperator.minor,
-        checkValue: 0.2,
-        operation: (ctrl, result) {
-          if (result) {
-            ctrl
-              ..pause()
-              ..rewind();
-          }
-          // ops[0] = result;
-          // print('******  ${ops[0]} ${ops[1]}    ${operations.value}');
-        },
-      ),
-    );
-    // ..addConditionalOperation(
-    //   (
-    //     layerBuffer: shader.mainImage,
-    //     param: Param.iMouseYNormalized,
-    //     checkType: CheckOperator.minor,
-    //     checkValue: 0.5,
-    //     operation: (result) {
-    //       ops[1] = result;
-    //       operations.value = ops[0] && ops[1];
-    //     },
-    //   ),
-    // );
+    shader = shader2();
   }
 
   @override
@@ -69,128 +38,123 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Stack(
-            alignment: Alignment.bottomCenter,
+            alignment: Alignment.center,
             children: [
-              ListView.builder(
-                itemCount: 20,
-                itemBuilder: (_, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ShaderBuffers(
-                      controller: controller,
-                      // width: 250,
-                      height: 100,
-                      mainImage: shader.mainImage,
-                      buffers: shader.buffers,
-                      startPaused: false,
-                    ),
-                  );
-                },
+              ShaderBuffers(
+                controller: controller,
+                // width: 250,
+                height: 100,
+                mainImage: shader.mainImage,
+                buffers: shader.buffers,
+                startPaused: false,
               ),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 4,
-                runSpacing: 4,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        shader = shader1();
-                      });
-                    },
-                    child: const Text('1'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        shader = shader2();
-                      });
-                    },
-                    child: const Text('2'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        shader = shader3();
-                      });
-                    },
-                    child: const Text('3'),
-                  ),
-                  ValueListenableBuilder(
-                    valueListenable: floatUniform,
-                    builder: (_, uniform, __) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Slider(
-                            value: uniform.$1,
-                            min: 0.1,
-                            max: 10,
-                            onChanged: (value) {
-                              shader.mainImage.floatUniforms = [
-                                value,
-                                uniform.$2,
-                                uniform.$3,
-                              ];
-                              floatUniform.value =
-                                  (value, uniform.$2, uniform.$3);
-                            },
-                          ),
-                          Slider(
-                            value: uniform.$2,
-                            min: 0.1,
-                            max: 10,
-                            onChanged: (value) {
-                              shader.mainImage.floatUniforms = [
-                                uniform.$1,
-                                value,
-                                uniform.$3,
-                              ];
-                              floatUniform.value =
-                                  (uniform.$1, value, uniform.$3);
-                            },
-                          ),
-                          Slider(
-                            value: uniform.$3,
-                            min: 0.1,
-                            max: 10,
-                            onChanged: (value) {
-                              shader.mainImage.floatUniforms = [
-                                uniform.$1,
-                                uniform.$2,
-                                value,
-                              ];
-                              floatUniform.value =
-                                  (uniform.$1, uniform.$2, value);
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: controller.pause,
-                    child: const Text('pause'),
-                  ),
-                  ElevatedButton(
-                    onPressed: controller.play,
-                    child: const Text('play'),
-                  ),
-                  ElevatedButton(
-                    onPressed: controller.rewind,
-                    child: const Text('rewind'),
-                  ),
-                  StatefulBuilder(
-                    builder: (context, setState) {
-                      final s = controller.getState();
-                      return ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        child: Text(s.name),
-                      );
-                    },
-                  ),
-                ],
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          shader = shader1();
+                        });
+                      },
+                      child: const Text('1'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          shader = shader2();
+                        });
+                      },
+                      child: const Text('2'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          shader = shader3();
+                        });
+                      },
+                      child: const Text('3'),
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: floatUniform,
+                      builder: (_, uniform, __) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Slider(
+                              value: uniform.$1,
+                              min: 0.1,
+                              max: 10,
+                              onChanged: (value) {
+                                shader.mainImage.floatUniforms = [
+                                  value,
+                                  uniform.$2,
+                                  uniform.$3,
+                                ];
+                                floatUniform.value =
+                                    (value, uniform.$2, uniform.$3);
+                              },
+                            ),
+                            Slider(
+                              value: uniform.$2,
+                              min: 0.1,
+                              max: 10,
+                              onChanged: (value) {
+                                shader.mainImage.floatUniforms = [
+                                  uniform.$1,
+                                  value,
+                                  uniform.$3,
+                                ];
+                                floatUniform.value =
+                                    (uniform.$1, value, uniform.$3);
+                              },
+                            ),
+                            Slider(
+                              value: uniform.$3,
+                              min: 0.1,
+                              max: 10,
+                              onChanged: (value) {
+                                shader.mainImage.floatUniforms = [
+                                  uniform.$1,
+                                  uniform.$2,
+                                  value,
+                                ];
+                                floatUniform.value =
+                                    (uniform.$1, uniform.$2, value);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: controller.pause,
+                      child: const Text('pause'),
+                    ),
+                    ElevatedButton(
+                      onPressed: controller.play,
+                      child: const Text('play'),
+                    ),
+                    ElevatedButton(
+                      onPressed: controller.rewind,
+                      child: const Text('rewind'),
+                    ),
+                    StatefulBuilder(
+                      builder: (context, setState) {
+                        final s = controller.getState();
+                        return ElevatedButton(
+                          onPressed: () => setState(() {}),
+                          child: Text(s.name),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -203,16 +167,33 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     final mainLayer = LayerBuffer(
       shaderAssetsName: 'assets/shaders/page_curl.frag',
       // floatUniforms: [1.0],
-    );
-
-    // ignore: cascade_invocations
-    mainLayer.setChannels(
+    )
+    ..setChannels(
       [
         // IChannel(assetsTexturePath: 'assets/flutter.png'),
         // IChannel(assetsTexturePath: 'assets/bricks.jpg'),
         IChannel(child: const Widget1()),
         IChannel(child: const Widget2()),
       ],
+    );
+
+    /// add checks to see when the pointer is in the upper left quadrand
+    controller = ShaderController();
+    controller.addConditionalOperation(
+      (
+        layerBuffer: mainLayer,
+        param: Param.iMouseXNormalized,
+        checkType: CheckOperator.minor,
+        checkValue: 0.2,
+        operation: (ctrl, result) {
+          if (result) {
+            ctrl
+              ..swapChannels(mainLayer, 0, 1)
+              ..pause()
+              ..rewind();
+          }
+        },
+      ),
     );
     return (mainImage: mainLayer, buffers: []);
   }

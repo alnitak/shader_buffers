@@ -12,20 +12,20 @@ import 'package:shader_buffers/src/layer_buffer.dart';
 
 /// the operation parameter to build the check
 typedef Operation = ({
-  /// the [LayerBuffer] which this check is binded to
-  LayerBuffer layerBuffer,
+/// the [LayerBuffer] which this check is binded to
+LayerBuffer layerBuffer,
 
-  /// the parameter to check
-  Param param,
+/// the parameter to check
+Param param,
 
-  /// the type of operator to use (>, <, ==)
-  CheckOperator checkType,
+/// the type of operator to use (>, <, ==)
+CheckOperator checkType,
 
-  /// the value to check
-  double checkValue,
+/// the value to check
+double checkValue,
 
-  /// the operation result to give back to dev
-  void Function(ShaderController controller, bool result) operation,
+/// the operation result to give back to dev
+void Function(ShaderController controller, bool result) operation,
 });
 
 /// parameter to check
@@ -74,6 +74,7 @@ class ShaderController {
   VoidCallback? _pause;
   VoidCallback? _play;
   VoidCallback? _rewind;
+  void Function(LayerBuffer layer, int index1, int index2)? _swapChannels;
   ShaderState Function()? _getState;
   IMouse Function()? _getIMouse;
   IMouse Function()? _getIMouseNormalized;
@@ -81,19 +82,19 @@ class ShaderController {
   /// list of all defined operations for this controller
   List<Operation> conditionalOperation = [];
 
-  void _setController(
-    void Function(Operation) addConditionalOperation,
-    VoidCallback pause,
-    VoidCallback play,
-    VoidCallback rewind,
-    ShaderState Function() getState,
-    IMouse Function() getIMouse,
-    IMouse Function() getIMouseNormalized,
-  ) {
+  void _setController(void Function(Operation) addConditionalOperation,
+      VoidCallback pause,
+      VoidCallback play,
+      VoidCallback rewind,
+      void Function(LayerBuffer layer, int index1, int index2)? swapChannels,
+      ShaderState Function() getState,
+      IMouse Function() getIMouse,
+      IMouse Function() getIMouseNormalized,) {
     _addConditionalOperation = addConditionalOperation;
     _pause = pause;
     _play = play;
     _rewind = rewind;
+    _swapChannels = swapChannels;
     _getState = getState;
     _getIMouse = getIMouse;
     _getIMouseNormalized = getIMouseNormalized;
@@ -133,6 +134,10 @@ class ShaderController {
 
   /// reset iTime and iFrameto zero
   void rewind() => _rewind?.call();
+
+  /// Swap channel with [index1] and [index2] of layer [layer]
+  void swapChannels(LayerBuffer layer, int index1, int index2) =>
+      _swapChannels?.call(layer, index1, index2);
 
   /// return the state
   ShaderState getState() => _getState?.call() ?? ShaderState.none;
@@ -231,19 +236,19 @@ class ShaderBuffers extends StatefulWidget {
 
   /// pointer callbacks to get position in texture size range.
   final void Function(ShaderController controller, Offset position)?
-      onPointerDown;
+  onPointerDown;
   final void Function(ShaderController controller, Offset position)?
-      onPointerMove;
+  onPointerMove;
   final void Function(ShaderController controller, Offset position)?
-      onPointerUp;
+  onPointerUp;
 
   /// pointer callbacks to get normalized position 0~1 range
   final void Function(ShaderController controller, Offset position)?
-      onPointerDownNormalized;
+  onPointerDownNormalized;
   final void Function(ShaderController controller, Offset position)?
-      onPointerMoveNormalized;
+  onPointerMoveNormalized;
   final void Function(ShaderController controller, Offset position)?
-      onPointerUpNormalized;
+  onPointerUpNormalized;
 
   @override
   State<ShaderBuffers> createState() => _ShaderBuffersState();
@@ -255,7 +260,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   late Stopwatch iTime;
   late IMouseController iMouse;
   late double iFrame;
-  late bool isInited;
+  late bool isInitialized;
   late bool startPausedAccomplished;
   late ShaderState state;
   late Offset startingPosition;
@@ -277,7 +282,9 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     iFrame = 0;
     iTime = Stopwatch();
     ticker = createTicker(tick);
-    relayout.value = DateTime.now().millisecondsSinceEpoch;
+    relayout.value = DateTime
+        .now()
+        .millisecondsSinceEpoch;
 
     if (!widget.startPaused) {
       _play();
@@ -291,12 +298,13 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       _pause,
       _play,
       _rewind,
+      _swapChannels,
       _getState,
       _getIMouse,
       _getIMouseNormalized,
     );
 
-    addChildrenLayers();
+    layoutChildren();
 
     // Add the additional operations after the 1st frame built
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -314,7 +322,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   /// Add the children of all [IChannel](s)
   /// If an [IChannel] has a child, add it using [CustomChildBuilder] else
   /// using a [RawImage] of the computed shader image
-  void addChildrenLayers() {
+  void layoutChildren() {
     /// The [layers] list contains at first the [mainImage] and then all the
     /// [buffer] [IChannel]s.
     /// The size of the main widget displayed is relative to the first child
@@ -337,8 +345,8 @@ class _ShaderBuffersState extends State<ShaderBuffers>
 
     for (var n = 0; n < (widget.buffers?.length ?? 0); n++) {
       for (var i = (widget.buffers?[n].channels?.length ?? 0) - 1;
-          i >= 0;
-          i--) {
+      i >= 0;
+      i--) {
         if (widget.buffers![n].channels![i].child != null) {
           layers.add(
             CustomChildBuilder(
@@ -379,9 +387,22 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     iTime.reset();
     if (state == ShaderState.paused) {
       Future.delayed(Duration.zero, () {
-        relayout.value = DateTime.now().millisecondsSinceEpoch;
+        relayout.value = DateTime
+            .now()
+            .millisecondsSinceEpoch;
       });
     }
+  }
+
+  /// swap channels
+  void _swapChannels(LayerBuffer layer, int index1, int index2) {
+    if (layer.channels?.isEmpty ?? true) return;
+    RangeError.checkValidIndex(index1, layer.channels, 'index1');
+    RangeError.checkValidIndex(index2, layer.channels, 'index2');
+    final tmp = layer.channels![index1];
+    layer.channels![index1] = layer.channels![index2];
+    layer.channels![index2] = tmp;
+    layoutChildren();
   }
 
   ShaderState _getState() => state;
@@ -393,7 +414,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
@@ -404,7 +425,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
           case CheckOperator.major:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
@@ -415,7 +436,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
           case CheckOperator.equal:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
@@ -430,33 +451,39 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
-                    iMouse.getIMouseNormalized().x < p.checkValue,
+                    iMouse
+                        .getIMouseNormalized()
+                        .x < p.checkValue,
                   );
                 }
               },
             );
           case CheckOperator.major:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
-                    iMouse.getIMouseNormalized().x > p.checkValue,
+                    iMouse
+                        .getIMouseNormalized()
+                        .x > p.checkValue,
                   );
                 }
               },
             );
           case CheckOperator.equal:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
-                    iMouse.getIMouseNormalized().x == p.checkValue,
+                    iMouse
+                        .getIMouseNormalized()
+                        .x == p.checkValue,
                   );
                 }
               },
@@ -467,7 +494,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
@@ -478,7 +505,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
           case CheckOperator.major:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
@@ -489,7 +516,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
           case CheckOperator.equal:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
@@ -504,33 +531,39 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
-                    iMouse.getIMouseNormalized().y < p.checkValue,
+                    iMouse
+                        .getIMouseNormalized()
+                        .y < p.checkValue,
                   );
                 }
               },
             );
           case CheckOperator.major:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
-                    iMouse.getIMouseNormalized().y > p.checkValue,
+                    iMouse
+                        .getIMouseNormalized()
+                        .y > p.checkValue,
                   );
                 }
               },
             );
           case CheckOperator.equal:
             p.layerBuffer.conditionalOperation.add(
-              () {
+                  () {
                 if (iMouse.currState == PointerState.onPointerMove) {
                   p.operation(
                     widget.controller,
-                    iMouse.getIMouseNormalized().y == p.checkValue,
+                    iMouse
+                        .getIMouseNormalized()
+                        .y == p.checkValue,
                   );
                 }
               },
@@ -541,24 +574,27 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
-              () => p.operation(
-                widget.controller,
-                iTime.elapsedMilliseconds < p.checkValue,
-              ),
+                  () =>
+                  p.operation(
+                    widget.controller,
+                    iTime.elapsedMilliseconds < p.checkValue,
+                  ),
             );
           case CheckOperator.major:
             p.layerBuffer.conditionalOperation.add(
-              () => p.operation(
-                widget.controller,
-                iTime.elapsedMilliseconds > p.checkValue,
-              ),
+                  () =>
+                  p.operation(
+                    widget.controller,
+                    iTime.elapsedMilliseconds > p.checkValue,
+                  ),
             );
           case CheckOperator.equal:
             p.layerBuffer.conditionalOperation.add(
-              () => p.operation(
-                widget.controller,
-                iTime.elapsedMilliseconds == p.checkValue,
-              ),
+                  () =>
+                  p.operation(
+                    widget.controller,
+                    iTime.elapsedMilliseconds == p.checkValue,
+                  ),
             );
         }
 
@@ -566,24 +602,27 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
-              () => p.operation(
-                widget.controller,
-                iFrame < p.checkValue,
-              ),
+                  () =>
+                  p.operation(
+                    widget.controller,
+                    iFrame < p.checkValue,
+                  ),
             );
           case CheckOperator.major:
             p.layerBuffer.conditionalOperation.add(
-              () => p.operation(
-                widget.controller,
-                iFrame > p.checkValue,
-              ),
+                  () =>
+                  p.operation(
+                    widget.controller,
+                    iFrame > p.checkValue,
+                  ),
             );
           case CheckOperator.equal:
             p.layerBuffer.conditionalOperation.add(
-              () => p.operation(
-                widget.controller,
-                iFrame == p.checkValue,
-              ),
+                  () =>
+                  p.operation(
+                    widget.controller,
+                    iFrame == p.checkValue,
+                  ),
             );
         }
     }
@@ -629,7 +668,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             ?.call(widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerDownNormalized?.call(
           widget.controller,
-          () {
+              () {
             final normalized = iMouse.getIMouseNormalized();
             return Offset(normalized.x, normalized.y);
           }.call(),
@@ -643,7 +682,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             ?.call(widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerMoveNormalized?.call(
           widget.controller,
-          () {
+              () {
             final normalized = iMouse.getIMouseNormalized();
             return Offset(normalized.x, normalized.y);
           }.call(),
@@ -657,7 +696,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             ?.call(widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerUpNormalized?.call(
           widget.controller,
-          () {
+              () {
             final normalized = iMouse.getIMouseNormalized();
             return Offset(normalized.x, normalized.y);
           }.call(),
@@ -671,7 +710,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             ?.call(widget.controller, Offset(iMouse.iMouse.x, iMouse.iMouse.y));
         widget.onPointerUpNormalized?.call(
           widget.controller,
-          () {
+              () {
             final normalized = iMouse.getIMouseNormalized();
             return Offset(normalized.x, normalized.y);
           }.call(),
