@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:shader_buffers/src/i_channel.dart';
 import 'package:shader_buffers/src/layer_buffer.dart';
 
 /// RenderBox which allow to store the snapshot of its child

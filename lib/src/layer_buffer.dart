@@ -1,74 +1,14 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shader_buffers/src/i_channel.dart';
 
 import 'package:shader_buffers/src/imouse.dart';
+import 'package:shader_buffers/src/uniforms.dart';
 
-/// class to define the kind of channel textures that will
-/// be used by [LayerBuffer].
-///
-/// Only one of the parameters can be given.
-class IChannel {
-  IChannel({
-    this.child,
-    this.buffer,
-    this.assetsTexturePath,
-    this.isSelf = false,
-  }) : assert(
-          !(!isSelf &&
-              child != null &&
-              buffer != null &&
-              assetsTexturePath != null),
-          'Only [isSelf] or [child] or [buffer] or [assetsTexturePath]'
-          ' must be given!',
-        );
-
-  /// the widget used by this [IChannel]
-  final Widget? child;
-
-  /// the assets image if [child] exists
-  ui.Image? childTexture;
-
-  final bool isSelf;
-
-  /// the buffer used by this [IChannel]
-  LayerBuffer? buffer;
-
-  /// the assets image path used by this [IChannel]
-  String? assetsTexturePath;
-
-  /// the assets image if [assetsTexturePath] exists
-  ui.Image? assetsTexture;
-
-  /// all textures loaded?
-  bool isInited = false;
-
-  /// eventually load textures
-  Future<bool> init() async {
-    if (isInited) return true;
-
-    isInited = true;
-    // Load all the assets textures
-    if (assetsTexturePath != null) {
-      try {
-        final assetImageByteData = await rootBundle.load(assetsTexturePath!);
-        final codec = await ui.instantiateImageCodec(
-          assetImageByteData.buffer.asUint8List(),
-        );
-        assetsTexture = (await codec.getNextFrame()).image;
-      } catch (e) {
-        debugPrint('Error loading assets image! $e');
-        isInited = false;
-      }
-    }
-
-    return isInited;
-  }
-}
 
 /// Class used to define a buffers or the main image layer.
 ///
@@ -90,14 +30,14 @@ class LayerBuffer {
   /// ```
   LayerBuffer({
     required this.shaderAssetsName,
-    this.floatUniforms,
+    this.uniforms,
   });
 
   /// The fragment shader source to use
   final String shaderAssetsName;
 
   /// additional floats uniforms
-  List<double>? floatUniforms;
+  Uniforms? uniforms;
 
   /// the channels this shader will use
   List<IChannel>? channels;
@@ -201,8 +141,8 @@ class LayerBuffer {
       ..setFloat(7, iMouse.w);
 
     /// eventually add more floats uniforms from [floatsUniforms]
-    for (var i = 8; i < (floatUniforms?.length ?? 0) + 8; i++) {
-      _shader!.setFloat(i, floatUniforms![i - 8]);
+    for (var i = 8; i < (uniforms?.uniforms.length ?? 0) + 8; i++) {
+      _shader!.setFloat(i, uniforms!.uniforms[i - 8].value);
     }
 
     /// eventually add sampler2D uniforms
@@ -236,21 +176,4 @@ class LayerBuffer {
     );
     picture.dispose();
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LayerBuffer &&
-          runtimeType == other.runtimeType &&
-          shaderAssetsName == other.shaderAssetsName &&
-          channels == other.channels &&
-          _program == other._program &&
-          _shader == other._shader;
-
-  @override
-  int get hashCode =>
-      shaderAssetsName.hashCode ^
-      channels.hashCode ^
-      _program.hashCode ^
-      _shader.hashCode;
 }

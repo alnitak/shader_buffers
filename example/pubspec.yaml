@@ -50,4 +50,6 @@ flutter:
     - assets/shaders/page_curl.frag
     - assets/shaders/noise_fade.frag
     - assets/shaders/ripple.frag
+    - assets/shaders/test_isself_buffer_a.frag
+    - assets/shaders/test_isself_main.frag
 

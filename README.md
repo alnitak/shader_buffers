@@ -6,17 +6,22 @@
   - [User interaction](#User-interaction)
   - [Add simple check value operations](#Add-simple-check-value-operations)
 - [Additional information](#Additional-information)
-  - [Writing a fragment shader (TODO)](#Writing-a-fragment-shader)
+  - [Writing a fragment shader](#Writing-a-fragment-shader)
 
 ## Features
 
-- Use shader output to feed other shader textures ([memory leak issue](https://github.com/flutter/flutter/issues/138627)).
+
+- Use shader output to feed other shader textures.
 - Feed shaders with asset images or any widgets as `sampler2D uniforms`.
 - Capture user interaction.
+- Easily add custom uniforms.
 - Look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions (from [gl-transitions](https://gl-transitions.com/)) or [ShaderToy](https://www.shadertoy.com/)) and effects.
 
 Tested on Android Linux and web, on other desktops it should work. Cannot test on Mac and iOS.
 Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.
+
+> [!NOTE]  
+> Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627)
 
 ## Getting started
 
@@ -52,7 +57,20 @@ To start, you can define the layers:
 /// The main layer uses `shader_main.frag` as fragment shader source and some float uniforms
 final mainImage = LayerBuffer(
   shaderAssetsName: 'assets/shaders/shader_main.glsl',
-  floatUniforms: [0.5, 1],
+  uniforms: Uniforms([
+      Uniform(
+        name: 'blur',
+        range: const RangeValues(0, 1),
+        defaultValue: 0.9,
+        value: 0.9,
+      ),
+      Uniform(
+        name: 'velocity',
+        range: const RangeValues(0, 1),
+        defaultValue: 0.2,
+        value: 0.2,
+      ),
+    ]),
 );
 /// This [LayerBuffer] uses 'shader_bufferA.glsl' as the fragment shader
 /// and a channel that uses an assets image.
@@ -123,24 +141,15 @@ controller
 ```dart
 final mainLayer = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_main.frag',
-    channels: [IChannel(buffer: 2)],
 );
 final bufferA = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_bufferA.frag',
 );
 final bufferB = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_bufferB.frag',
-    channels: [
-      IChannel(buffer: 0),
-    ],
 );
 final bufferC = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_bufferC.frag',
-    channels: [
-      IChannel(buffer: 0),
-      IChannel(buffer: 1),
-      IChannel(assetsImage: 'assets/bricks.jpg'),
-    ],
 );
 mainLayer.setChannels([IChannel(buffer: bufferC)])
 bufferB.setChannels([IChannel(buffer: bufferA)]);
@@ -161,7 +170,26 @@ after this line you can add this to swap Y coordinates:
 `uv = vec2(uv.x, 1. - uv.y);`
 
 #### Writing a fragment shader
-TODO
+
+It's mandatory to provide to the shader the folllowing `uniforms` since **shader_buffer** always send them:
+
+```
+uniform vec2 iResolution;
+uniform float iTime;
+uniform float iFrame;
+uniform vec4 iMouse;
+```
+
+For simplicity there is `assets/shader/common/common_header.frag` to include at the very beginning of the shader:
+`#include <common/common_header.frag>` 
+
+it provides also:
+`out vec4 fragColor;`
+
+If are experimenting with ShaderToy shaders, start your code copied from it and in the bottom of the file include `main_shadertoy.frag`:
+`#include <common/main_shadertoy.frag>`
+
+
 
 https://github.com/alnitak/shader_buffers/assets/192827/2595f3ce-3dda-4d2e-bc96-13872570dc3b
 

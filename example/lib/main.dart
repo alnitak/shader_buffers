@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shader_buffers/shader_buffers.dart';
+import 'package:shader_buffers/src/i_channel.dart';
 
 typedef Layers = ({LayerBuffer mainImage, List<LayerBuffer> buffers});
 
@@ -16,16 +17,15 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   late Layers shader;
-  ValueNotifier<(double a, double b, double c)> floatUniform =
-      ValueNotifier((0.6, 8.0, 1.0));
   ValueNotifier<bool> operations = ValueNotifier<bool>(false);
   final List<bool> ops = [false, false];
   ShaderController controller = ShaderController();
+  ValueNotifier<List<Uniform>> uniform = ValueNotifier([]);
 
   @override
   void initState() {
     super.initState();
-    shader = shader2();
+    shader = shader4();
   }
 
   @override
@@ -43,115 +43,92 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               ShaderBuffers(
                 controller: controller,
                 // width: 250,
-                height: 100,
+                // height: 300,
                 mainImage: shader.mainImage,
                 buffers: shader.buffers,
                 startPaused: false,
               ),
               Align(
                 alignment: Alignment.bottomCenter,
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 4,
-                  runSpacing: 4,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          shader = shader1();
-                        });
-                      },
-                      child: const Text('1'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          shader = shader2();
-                        });
-                      },
-                      child: const Text('2'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          shader = shader3();
-                        });
-                      },
-                      child: const Text('3'),
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: floatUniform,
-                      builder: (_, uniform, __) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Slider(
-                              value: uniform.$1,
-                              min: 0.1,
-                              max: 10,
-                              onChanged: (value) {
-                                shader.mainImage.floatUniforms = [
-                                  value,
-                                  uniform.$2,
-                                  uniform.$3,
-                                ];
-                                floatUniform.value =
-                                    (value, uniform.$2, uniform.$3);
-                              },
-                            ),
-                            Slider(
-                              value: uniform.$2,
-                              min: 0.1,
-                              max: 10,
-                              onChanged: (value) {
-                                shader.mainImage.floatUniforms = [
-                                  uniform.$1,
-                                  value,
-                                  uniform.$3,
-                                ];
-                                floatUniform.value =
-                                    (uniform.$1, value, uniform.$3);
-                              },
-                            ),
-                            Slider(
-                              value: uniform.$3,
-                              min: 0.1,
-                              max: 10,
-                              onChanged: (value) {
-                                shader.mainImage.floatUniforms = [
-                                  uniform.$1,
-                                  uniform.$2,
-                                  value,
-                                ];
-                                floatUniform.value =
-                                    (uniform.$1, uniform.$2, value);
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: controller.pause,
-                      child: const Text('pause'),
-                    ),
-                    ElevatedButton(
-                      onPressed: controller.play,
-                      child: const Text('play'),
-                    ),
-                    ElevatedButton(
-                      onPressed: controller.rewind,
-                      child: const Text('rewind'),
-                    ),
-                    StatefulBuilder(
-                      builder: (context, setState) {
-                        final s = controller.getState();
-                        return ElevatedButton(
-                          onPressed: () => setState(() {}),
-                          child: Text(s.name),
-                        );
-                      },
+                    ...List.generate(uniform.value.length, (index) {
+                      return ValueListenableBuilder(
+                        valueListenable: uniform,
+                        builder: (_, v, __) {
+                          return Slider(
+                            value: v[index].value,
+                            min: uniform.value[index].range!.start,
+                            max: uniform.value[index].range!.end,
+                            onChanged: (value) {
+                              uniform.value[index].value = value;
+                              uniform.value = uniform.value.toList();
+                            },
+                          );
+                        },
+                      );
+                    }),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              shader = shader1();
+                            });
+                          },
+                          child: const Text('1'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              shader = shader2();
+                            });
+                          },
+                          child: const Text('2'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              shader = shader3();
+                            });
+                          },
+                          child: const Text('3'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              shader = shader4();
+                            });
+                          },
+                          child: const Text('4'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: controller.pause,
+                          child: const Text('pause'),
+                        ),
+                        ElevatedButton(
+                          onPressed: controller.play,
+                          child: const Text('play'),
+                        ),
+                        ElevatedButton(
+                          onPressed: controller.rewind,
+                          child: const Text('rewind'),
+                        ),
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            final s = controller.getState();
+                            return ElevatedButton(
+                              onPressed: () => setState(() {}),
+                              child: Text(s.name),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -164,18 +141,18 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   Layers shader1() {
+    uniform.value = [];
     final mainLayer = LayerBuffer(
       shaderAssetsName: 'assets/shaders/page_curl.frag',
       // floatUniforms: [1.0],
-    )
-    ..setChannels(
-      [
-        // IChannel(assetsTexturePath: 'assets/flutter.png'),
-        // IChannel(assetsTexturePath: 'assets/bricks.jpg'),
-        IChannel(child: const Widget1()),
-        IChannel(child: const Widget2()),
-      ],
-    );
+    )..setChannels(
+        [
+          // IChannel(assetsTexturePath: 'assets/flutter.png'),
+          // IChannel(assetsTexturePath: 'assets/bricks.jpg'),
+          IChannel(child: const Widget1()),
+          IChannel(child: const Widget2()),
+        ],
+      );
 
     /// add checks to see when the pointer is in the upper left quadrand
     controller = ShaderController();
@@ -199,9 +176,30 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   Layers shader2() {
+    uniform.value = [
+      Uniform(
+        name: 'a',
+        range: const RangeValues(0, 10),
+        defaultValue: 1,
+        value: 1,
+      ),
+      Uniform(
+        name: 'b',
+        range: const RangeValues(0, 10),
+        defaultValue: 1,
+        value: 1,
+      ),
+      Uniform(
+        name: 'c',
+        range: const RangeValues(0, 10),
+        defaultValue: 1,
+        value: 1,
+      ),
+    ];
+
     final mainLayer = LayerBuffer(
       shaderAssetsName: 'assets/shaders/water.frag',
-      floatUniforms: [0.6, 8, 1],
+      uniforms: Uniforms(uniform.value),
     )..setChannels(
         [
           IChannel(assetsTexturePath: 'assets/flutter.png'),
@@ -213,6 +211,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   }
 
   Layers shader3() {
+    uniform.value = [];
     final mainLayer = LayerBuffer(
       shaderAssetsName: 'assets/shaders/page_curl.frag',
       // floatUniforms: [0.1],
@@ -228,6 +227,42 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       ],
     );
     return (mainImage: mainLayer, buffers: []);
+  }
+
+  Layers shader4() {
+    uniform.value = [
+      Uniform(
+        name: 'R',
+        range: const RangeValues(0, 1),
+        defaultValue: 0.9,
+        value: 0.9,
+      ),
+      Uniform(
+        name: 'G',
+        range: const RangeValues(0, 1),
+        defaultValue: 0.9,
+        value: 0.9,
+      ),
+      Uniform(
+        name: 'B',
+        range: const RangeValues(0, 1),
+        defaultValue: 0.2,
+        value: 0.2,
+      ),
+    ];
+
+    final bufferA = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/test_isself_buffer_a.frag',
+      uniforms: Uniforms(uniform.value),
+    );
+
+    final mainLayer = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/test_isself_main.frag',
+    );
+
+    // bufferA.setChannels([IChannel(isSelf: true)]);
+    mainLayer.setChannels([IChannel(buffer: bufferA)]);
+    return (mainImage: mainLayer, buffers: [bufferA]);
   }
 }
 

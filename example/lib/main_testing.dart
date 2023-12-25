@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shader_buffers/shader_buffers.dart';
+import 'package:shader_buffers/src/i_channel.dart';
 
 typedef Layers = ({LayerBuffer mainImage, List<LayerBuffer> buffers});
 
