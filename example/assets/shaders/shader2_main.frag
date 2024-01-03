@@ -1,44 +1,62 @@
-#version 460 core
-#include <flutter/runtime_effect.glsl>
-precision mediump float;
+#include <common/common_header.frag>
 
 uniform sampler2D iChannel0;
-uniform vec2 iResolution;
-uniform float iTime;
-uniform float iFrame;
-uniform vec4 iMouse;
-
-out vec4 fragColor;
-
-// credits:
-// https://www.shadertoy.com/view/sl3Szs
 
 
+// https://www.shadertoy.com/view/4lySDc
+
+
+
+// ------ START SHADERTOY CODE -----
+vec2 lighting(vec2 uv)
+{
+    // vec2 tx1 = 1.0 / iResolution.xy;
+    vec2 tx1 = vec2(3.0, 3.0);
+    vec4 nx0 = texture(iChannel0, uv + vec2(-tx1.x, 0));
+    vec4 nx1 = texture(iChannel0, uv + vec2(tx1.x, 0));
+    vec4 ny0 = texture(iChannel0, uv + vec2(0, -tx1.y));
+    vec4 ny1 = texture(iChannel0, uv + vec2(0, tx1.y));
+    
+    float ax0 = nx0.y + nx0.w;
+    float ax1 = nx1.y + nx1.w;
+    float ay0 = ny0.y + ny0.w;
+    float ay1 = ny1.y + ny1.w;
+    
+    vec3 tx = vec3(0.35, 0.0, ax0 - ax1);
+    vec3 ty = vec3(0.0, 0.35, ay0 - ay1);
+    vec3 N = normalize(cross(tx, ty));
+    
+    vec3 L = normalize(vec3(1.0, 1.0, 2.0));
+    
+    float diff = max(dot(N, L) * 0.65 + 0.35, 0.0);
+    float spec = clamp(dot(reflect(L, N),vec3(0., 0., -1.)), 0.0, 1.0);
+    spec = pow(spec, 12.0);
+    
+    return vec2(diff, spec);
+}
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    vec2 u = fragCoord/iResolution.xy;
-    u = vec2(u.x, 1. - u.y);
-    vec4 a = texture(iChannel0,u);
-    fragColor = a.z*(+sin(a.x*4.+vec4(1,3,5,4))*.2
-                     +sin(a.y*4.+vec4(1,3,2,4))*.2+.6);
+	vec2 uv = fragCoord.xy / iResolution.xy;
+    vec4 mat = texture(iChannel0, uv);
+    
+    vec3 color0 = vec3(1.0, 1.0, 0.0);
+    vec3 color1 = vec3(0.0, 0.0, 0.0);
+    
+    // normalize material density
+    float matTotal = mat.y + mat.w;
+    if (matTotal > 1.0)
+    	mat.yw /= matTotal;
+    
+    vec3 matColor = color0 * mat.y + color1 * mat.w;
+    vec2 light = lighting(uv);
+    vec3 finalColor = matColor * light.x + light.y;
+    
+	fragColor = vec4(finalColor, 1.0);
 }
+// ------ END SHADERTOY CODE -----
 
 
 
 
-
-
-
-void main() {
-    // Shader compiler optimizations will remove unusued uniforms.
-    // Since [LayerBuffer.computeLayer] needs to always set these uniforms, when 
-    // this happens, an error occurs when calling setFloat()
-    // `IndexError (RangeError (index): Index out of range: index should be less than 3: 3)`
-    // With the following line, the compiler will not remove unusued
-    float tmp = (iFrame/iFrame) * (iMouse.x/iMouse.x) * 
-        (iTime/iTime) * (iResolution.x/iResolution.x);
-    if (tmp != 1.) tmp = 1.;
-
-    mainImage( fragColor, FlutterFragCoord().xy * tmp );
-}
+#include <common/main_shadertoy.frag>

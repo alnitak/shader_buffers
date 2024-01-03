@@ -1,55 +1,99 @@
-#version 460 core
-#include <flutter/runtime_effect.glsl>
-precision mediump float;
+#include <common/common_header.frag>
 
-layout(location = 0) uniform sampler2D iChannel0;
-layout(location = 1) uniform vec2 iResolution;
-layout(location = 2) uniform float iTime;
-layout(location = 3) uniform float iFrame;
-layout(location = 4) uniform vec4 iMouse;
-
-out vec4 fragColor;
+uniform sampler2D iChannel0;
 
 
 
 
-#define A(u) texture(iChannel0,(u)/iResolution.xy)
-void mainImage( out vec4 fragColor, in vec2 u )
+// ------ START SHADERTOY CODE -----
+#define PAINT_MODE 4
+#define MIX_MODE 1
+
+const float mixPercent = 0.1;
+const float brushRadius = 10.0;
+
+// IMPORTANT: mixPair must be symmetric: mixPair(a,b) + mixPair(b,a) == 0
+#if MIX_MODE == 1
+vec2 mixPair(vec2 a, vec2 b)
 {
-    vec2 v = u/iResolution.xy;
-    vec4 a = A(u);
-    vec2 m = +a.xy                      //fluid velocity
-             -vec2(0,1)*.01             //gravity
-             +float(v.x<.05)*vec2(1,0)  //wall
-             +float(v.y<.05)*vec2(0,1)  //wall
-             -float(v.x>.95)*vec2(1,0)  //wall
-             -float(v.y>.95)*vec2(0,1); //wall
-    float s = 0.;
-    // float z = 4.;//kernel convolution size
-    for(float i=-4.; i<=4.; ++i){
-    for(float j=-4.; j<=4.; ++j){
-      vec2 c = -m+vec2(i,j);//translate the gaussian 2Dimage using the velocity
-      s += exp(-dot(c,c));  //calculate the gaussian 2Dimage
-    }}
-    if(s==0.){s = 1.;}      //avoid division by zero
-              s = 1./s;
-    fragColor = vec4(m,s,0);//velocity in .xy
-                            //convolution normalization in .z
+    return (b - a) * mixPercent;
+}
+#elif MIX_MODE == 2
+vec2 mixPair(vec2 a, vec2 b)
+{
+    vec2 sum = vec2(a.x + a.y, b.x + b.y);    
+    float amount = (sum.y - sum.x);
+    float totalBig = max(sum.x, sum.y);
+    if (totalBig == 0.0)
+        return vec2(0.0, 0.0);
+        
+    vec2 movement;
+    if (amount < 0.0)
+    {
+        movement = amount * a / totalBig; 
+    }
+    else
+    {
+        movement = amount * b / totalBig; 
+    }
+
+    return movement * mixPercent;
+}
+#endif
+
+vec2 mixNeighbors(vec2 uv, vec4 center)
+{
+    // vec2 tx1 = 1.0 / iResolution.xy;
+    vec2 tx1 = vec2(2.0, 2.0);
+    vec4 nx0 = texture(iChannel0, uv + vec2(-tx1.x, 0));
+    vec4 nx1 = texture(iChannel0, uv + vec2(tx1.x, 0));
+    vec4 ny0 = texture(iChannel0, uv + vec2(0, -tx1.y));
+    vec4 ny1 = texture(iChannel0, uv + vec2(0, tx1.y));
+    
+    vec2 result = center.yw;
+    result += mixPair(center.yw, nx0.yw);
+    result += mixPair(center.yw, nx1.yw);
+    result += mixPair(center.yw, ny0.yw);
+    result += mixPair(center.yw, ny1.yw);
+    return result;
 }
 
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+	vec2 uv = fragCoord.xy / iResolution.xy;
+    vec4 prev = texture(iChannel0, uv);
 
-
-
-
-void main() {
-    // Shader compiler optimizations will remove unusued uniforms.
-    // Since [LayerBuffer.computeLayer] needs to always set these uniforms, when 
-    // this happens, an error occurs when calling setFloat()
-    // `IndexError (RangeError (index): Index out of range: index should be less than 3: 3)`
-    // With the following line, the compiler will not remove unusued
-    float tmp = (iFrame/iFrame) * (iMouse.x/iMouse.x) * 
-        (iTime/iTime) * (iResolution.x/iResolution.x);
-    if (tmp != 1.) tmp = 1.;
-
-    mainImage( fragColor, FlutterFragCoord().xy * tmp );
+    prev.yw = mixNeighbors(uv, prev);
+    
+    float brush = 0.0;
+    if (iMouse.z >= 0.0)
+    {
+    	float d = distance(iMouse.xy, fragCoord.xy);
+        d /= brushRadius * 3.0;
+        brush = clamp(1.0 - d * d * d * d, -0.0, 1.0);
+    }
+    
+    vec2 mmask = vec2(1.4, 0.02);
+    
+#if PAINT_MODE == 1
+    vec2 amt = prev.yw + mmask * brush;
+#elif PAINT_MODE == 2
+    vec2 amt = mix(prev.yw, mmask, brush);
+#elif PAINT_MODE == 3
+    vec2 amt = mix(prev.yw, prev.yw * mmask, brush) + mmask * brush;
+#elif PAINT_MODE == 4
+    float prevTotal = prev.y + prev.w;
+    vec2 newVal = (vec2(prevTotal, prevTotal) + brush) * mmask;
+    vec2 amt = mix(prev.yw, newVal, brush);
+#endif
+    
+    fragColor = vec4(0.0, amt.x, 1.0, amt.y/2.);
 }
+// ------ END SHADERTOY CODE -----
+
+
+
+
+
+
+#include <common/main_shadertoy.frag>

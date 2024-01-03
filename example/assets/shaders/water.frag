@@ -1,21 +1,16 @@
-#version 460 core
-#include <flutter/runtime_effect.glsl>
-precision mediump float;
+#include <common/common_header.frag>
 
 uniform sampler2D iChannel0;
-uniform vec2 iResolution;
-uniform float iTime;
-uniform float iFrame;
-uniform vec4 iMouse;
 
-uniform float speed;     // 0.6
-uniform float frequency; // 8.0
-uniform float amplitude; // 1.0
 
-out vec4 fragColor;
 
 // credits:
 // https://www.shadertoy.com/view/Mls3DH
+
+// ------ START SHADERTOY CODE -----
+uniform float speed;     // 0.6
+uniform float frequency; // 8.0
+uniform float amplitude; // 1.0
 
 
 // [2TC 15] Water2D

@@ -1,9 +1,13 @@
+/// Highly inspired from
+/// https://github.com/jonahwilliams/flutter_shaders/blob/main/lib/src/animated_sampler.dart
+/// by Jonah Williams
+
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:shader_buffers/src/i_channel.dart';
-import 'package:shader_buffers/src/layer_buffer.dart';
 
 /// RenderBox which allow to store the snapshot of its child
 /// into [layerChannel.childTexture] to be used as texture.
@@ -130,7 +134,7 @@ class _CustomChildLayer extends OffsetLayer {
   }
 
   double get devicePixelRatio => _devicePixelRatio;
-  double _devicePixelRatio = 1.0;
+  double _devicePixelRatio = 1;
 
   set devicePixelRatio(double value) {
     if (value == devicePixelRatio) {

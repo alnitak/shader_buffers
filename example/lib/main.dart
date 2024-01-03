@@ -25,7 +25,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    shader = shader4();
+    shader = shader5();
   }
 
   @override
@@ -41,6 +41,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
             alignment: Alignment.center,
             children: [
               ShaderBuffers(
+                key: UniqueKey(),
                 controller: controller,
                 // width: 250,
                 // height: 300,
@@ -59,8 +60,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                         builder: (_, v, __) {
                           return Slider(
                             value: v[index].value,
-                            min: uniform.value[index].range!.start,
-                            max: uniform.value[index].range!.end,
+                            min: uniform.value[index].range.start,
+                            max: uniform.value[index].range.end,
                             onChanged: (value) {
                               uniform.value[index].value = value;
                               uniform.value = uniform.value.toList();
@@ -106,7 +107,21 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                           },
                           child: const Text('4'),
                         ),
-                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              shader = shader5();
+                            });
+                          },
+                          child: const Text('5'),
+                        ),
+                      ],
+                    ),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
                         ElevatedButton(
                           onPressed: controller.pause,
                           child: const Text('pause'),
@@ -261,6 +276,21 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     );
 
     // bufferA.setChannels([IChannel(isSelf: true)]);
+    mainLayer.setChannels([IChannel(buffer: bufferA)]);
+    return (mainImage: mainLayer, buffers: [bufferA]);
+  }
+
+  Layers shader5() {
+    uniform.value = [];
+    final bufferA = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/shader1_bufferA.frag',
+    );
+
+    final mainLayer = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/shader1_main.frag',
+    );
+
+    bufferA.setChannels([IChannel(buffer: bufferA)]);
     mainLayer.setChannels([IChannel(buffer: bufferA)]);
     return (mainImage: mainLayer, buffers: [bufferA]);
   }

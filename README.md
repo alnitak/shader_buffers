@@ -15,13 +15,13 @@
 - Feed shaders with asset images or any widgets as `sampler2D uniforms`.
 - Capture user interaction.
 - Easily add custom uniforms.
-- Look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions (from [gl-transitions](https://gl-transitions.com/)) or [ShaderToy](https://www.shadertoy.com/)) and effects.
+- **Please**, take a look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions and effects (from [gl-transitions](https://gl-transitions.com/) or [ShaderToy](https://www.shadertoy.com/)).
 
 Tested on Android Linux and web, on other desktops it should work. Cannot test on Mac and iOS.
 Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.
 
 > [!NOTE]  
-> Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627)
+> Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627). Please thumb up!
 
 ## Getting started
 

@@ -36,7 +36,7 @@ class LayerBuffer {
   /// The fragment shader source to use
   final String shaderAssetsName;
 
-  /// additional floats uniforms
+  /// additional uniforms
   Uniforms? uniforms;
 
   /// the channels this shader will use
@@ -65,7 +65,7 @@ class LayerBuffer {
   Future<bool> init() async {
     var loaded = true;
     loaded = await _loadShader();
-    loaded &= await _loadIAssetsTextures();
+    loaded &= await _loadAssetsTextures();
     debugPrint('LayerBuffer.init() loaded: $loaded  $shaderAssetsName');
     return loaded;
   }
@@ -83,7 +83,7 @@ class LayerBuffer {
   }
 
   /// load the blank image and initialize all channel textures
-  Future<bool> _loadIAssetsTextures() async {
+  Future<bool> _loadAssetsTextures() async {
     /// setup blankImage. Displayed when the layerImage is not yet available
     try {
       final assetImageByteData = await rootBundle
@@ -115,8 +115,13 @@ class LayerBuffer {
     layerImage = null;
   }
 
-  /// draw the shader into [layerImage]
-  /// clear cache mem
+  /// Draw the shader into [layerImage].
+  /// 
+  /// Using the same [layerImage] of this layer as the input textture,
+  /// cause a memory leak:
+  /// https://github.com/flutter/flutter/issues/138627
+  /// 
+  /// Clear cache mem
   /// sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
   void computeLayer(
     Size iResolution,
@@ -141,8 +146,8 @@ class LayerBuffer {
       ..setFloat(7, iMouse.w);
 
     /// eventually add more floats uniforms from [floatsUniforms]
-    for (var i = 8; i < (uniforms?.uniforms.length ?? 0) + 8; i++) {
-      _shader!.setFloat(i, uniforms!.uniforms[i - 8].value);
+    for (var i = 0; i < (uniforms?.uniforms.length ?? 0); i++) {
+      _shader!.setFloat(i + 8, uniforms!.uniforms[i].value);
     }
 
     /// eventually add sampler2D uniforms

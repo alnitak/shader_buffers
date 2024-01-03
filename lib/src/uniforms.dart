@@ -6,13 +6,13 @@ import 'package:flutter/material.dart';
 class Uniform {
   Uniform({
     required this.value,
-    this.name,
-    this.range,
-    this.defaultValue,
+    required this.name,
+    required this.range,
+    required this.defaultValue,
   });
-  RangeValues? range;
-  double? defaultValue;
-  String? name;
+  RangeValues range;
+  double defaultValue;
+  String name;
   double value;
 }
 
@@ -44,5 +44,12 @@ class Uniforms {
 
   List<double> getDoubleList() {
     return List.generate(uniforms.length, (index) => uniforms[index].value);
+  }
+
+  void setDoubleList(List<double> values) {
+    assert(values.length == uniforms.length, 'Uniform length doesn\'t match!');
+    for (var i = 0; i < values.length; i++) {
+      uniforms[i].value = values[i];
+    }
   }
 }
