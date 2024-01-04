@@ -15,6 +15,7 @@
 - Feed shaders with asset images or any widgets as `sampler2D uniforms`.
 - Capture user interaction.
 - Easily add custom uniforms.
+- Play / Pause shader.
 - **Please**, take a look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions and effects (from [gl-transitions](https://gl-transitions.com/) or [ShaderToy](https://www.shadertoy.com/)).
 
 Tested on Android Linux and web, on other desktops it should work. Cannot test on Mac and iOS.

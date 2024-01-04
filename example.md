@@ -23,8 +23,8 @@ class MainApp extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: ShaderBuffers(
             controller: controller,
-            // width: 250,
-            // height: 300,
+            // width: 350,
+            // height: 200,
             mainImage: mainLayer,
             startPaused: false,
           ),

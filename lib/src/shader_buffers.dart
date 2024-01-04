@@ -638,7 +638,6 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   Widget build(BuildContext context) {
     return Listener(
       onPointerDown: (details) {
-        print('DOWN');
         if (state == ShaderState.playing) {
           iMouse.start(details.localPosition);
         }

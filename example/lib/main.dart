@@ -309,13 +309,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     uniform.value = [];
 
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/mouse1.frag',
+      shaderAssetsName: 'assets/shaders/mouse2.frag',
     );
-// mainLayer.setChannels(
-//       [
-//         IChannel(assetsTexturePath: 'assets/flutter.png'),
-//       ],
-//     );
     return (mainImage: mainLayer, buffers: []);
   }
 }
