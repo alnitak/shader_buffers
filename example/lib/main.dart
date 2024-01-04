@@ -18,14 +18,13 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   late Layers shader;
   ValueNotifier<bool> operations = ValueNotifier<bool>(false);
-  final List<bool> ops = [false, false];
   ShaderController controller = ShaderController();
   ValueNotifier<List<Uniform>> uniform = ValueNotifier([]);
 
   @override
   void initState() {
     super.initState();
-    shader = shader5();
+    shader = shader6();
   }
 
   @override
@@ -48,6 +47,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 mainImage: shader.mainImage,
                 buffers: shader.buffers,
                 startPaused: false,
+                onPointerDown: (controller, position) {
+                  print(position);
+                },
               ),
               Align(
                 alignment: Alignment.bottomCenter,
@@ -114,6 +116,14 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                             });
                           },
                           child: const Text('5'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              shader = shader6();
+                            });
+                          },
+                          child: const Text('6'),
                         ),
                       ],
                     ),
@@ -293,6 +303,20 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     bufferA.setChannels([IChannel(buffer: bufferA)]);
     mainLayer.setChannels([IChannel(buffer: bufferA)]);
     return (mainImage: mainLayer, buffers: [bufferA]);
+  }
+
+  Layers shader6() {
+    uniform.value = [];
+
+    final mainLayer = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/mouse1.frag',
+    );
+// mainLayer.setChannels(
+//       [
+//         IChannel(assetsTexturePath: 'assets/flutter.png'),
+//       ],
+//     );
+    return (mainImage: mainLayer, buffers: []);
   }
 }
 

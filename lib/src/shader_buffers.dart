@@ -204,7 +204,7 @@ class ShaderBuffers extends StatefulWidget {
     this.width,
     this.height,
     this.startPaused = false,
-    this.buffers,
+    this.buffers = const[],
     this.onPointerDown,
     this.onPointerMove,
     this.onPointerUp,
@@ -229,7 +229,7 @@ class ShaderBuffers extends StatefulWidget {
   final LayerBuffer mainImage;
 
   /// Other optional channels
-  final List<LayerBuffer>? buffers;
+  final List<LayerBuffer> buffers;
 
   /// controller for this widget.
   final ShaderController controller;
@@ -341,20 +341,20 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       }
     }
 
-    for (var n = 0; n < (widget.buffers?.length ?? 0); n++) {
-      for (var i = (widget.buffers?[n].channels?.length ?? 0) - 1;
+    for (var n = 0; n < widget.buffers.length; n++) {
+      for (var i = (widget.buffers[n].channels?.length ?? 0) - 1;
           i >= 0;
           i--) {
-        if (widget.buffers![n].channels![i].child != null) {
+        if (widget.buffers[n].channels![i].child != null) {
           layers.add(
             CustomChildBuilder(
-              layerChannel: widget.buffers![n].channels![i],
+              layerChannel: widget.buffers[n].channels![i],
               enabled: state == ShaderState.playing,
-              child: widget.buffers![n].channels![i].child,
+              child: widget.buffers[n].channels![i].child,
             ),
           );
         } else {
-          layers.add(RawImage(image: widget.buffers![n].layerImage?.clone()));
+          layers.add(RawImage(image: widget.buffers[n].layerImage?.clone()));
         }
       }
     }
@@ -638,6 +638,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   Widget build(BuildContext context) {
     return Listener(
       onPointerDown: (details) {
+        print('DOWN');
         if (state == ShaderState.playing) {
           iMouse.start(details.localPosition);
         }
@@ -700,7 +701,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
           builder: (_, __, ___) {
             return CustomShaderPaint(
               mainImage: widget.mainImage,
-              buffers: widget.buffers ?? [],
+              buffers: widget.buffers,
               iTime: iTime.elapsedMilliseconds / 1000.0,
               iFrame: iFrame,
               iMouse: iMouse.iMouse,

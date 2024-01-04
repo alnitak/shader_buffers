@@ -268,6 +268,10 @@ class RenderCustomShaderPaint extends RenderBox
   void attach(PipelineOwner owner) {
     super.attach(owner);
     shaderInitialized = false;
+    /// Add a RenderBox if there are no children
+    if (childCount == 0) {
+      add(RenderImage());
+    }
     loadShaders().then((value) {
       shaderInitialized = value;
     });
@@ -302,7 +306,6 @@ class RenderCustomShaderPaint extends RenderBox
     Size sizeWithChildren = constraints.biggest;
     Size sizeWithoutChildren = constraints.biggest;
     hasChildWidgets = false;
-
 
     /// Loop from last [buffer] to the first and then [mainImage] as
     /// passed to this RenderBox.
@@ -346,7 +349,7 @@ class RenderCustomShaderPaint extends RenderBox
     }
     assert(offset == Offset.zero, '');
 
-    for (var i = 0; i < (buffers.length ?? 0); i++) {
+    for (var i = 0; i < buffers.length; i++) {
       buffers[i].computeLayer(size, iTime, iFrame, iMouse);
     }
 
@@ -365,7 +368,10 @@ class RenderCustomShaderPaint extends RenderBox
       }
     }
     context.canvas.drawImage(
-        mainImage.layerImage ?? mainImage.blankImage!, Offset.zero, Paint());
+      mainImage.layerImage ?? mainImage.blankImage!,
+      Offset.zero,
+      Paint(),
+    );
 
     /// If we will want to have some fun..
     // paintImage(
@@ -373,15 +379,5 @@ class RenderCustomShaderPaint extends RenderBox
     //   rect: offset & size,
     //   image: mainImage.layerImage ?? mainImage.blankImage!,
     // );
-
-    // if (mainImage.layerImage != null) {
-    //   mainImage.layerImage!.toByteData(format: ui.ImageByteFormat.png)
-    //   .then((value) {
-    //     if (value != null) {
-    //       File('/home/deimos/pppp.png')
-    //         .writeAsBytesSync(value.buffer.asUint8List());
-    //     }
-    //   });
-    // }
   }
 }
