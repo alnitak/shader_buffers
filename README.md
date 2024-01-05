@@ -11,12 +11,13 @@
 ## Features
 
 
-- Use shader output to feed other shader textures.
-- Feed shaders with asset images or any widgets as `sampler2D uniforms`.
-- Capture user interaction.
-- Easily add custom uniforms.
-- Play / Pause shader.
-- **Please**, take a look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions and effects (from [gl-transitions](https://gl-transitions.com/) or [ShaderToy](https://www.shadertoy.com/)).
+- [x] Use shader output to feed other shader textures.
+- [x] Feed shaders with asset images or any widgets as `sampler2D uniforms`.
+- [x] Capture user interaction.
+- [x] Easily add custom uniforms.
+- [x] Play / Pause / Rewind shader.
+- [x] Conditional operations to check mouse/tap position, time or frame number.
+- [x] ***Please***, take a look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions and effects (from [gl-transitions](https://gl-transitions.com/) or [ShaderToy](https://www.shadertoy.com/)).
 
 Tested on Android Linux and web, on other desktops it should work. Cannot test on Mac and iOS.
 Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.

@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_positional_boolean_parameters
+// ignore_for_file: avoid_positional_boolean_parameters, public_member_api_docs
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -27,7 +27,7 @@ typedef Operation = ({
 });
 
 /// parameter to check
-enum Param {
+enum CommonParam {
   /// check X pointer position on the texture
   iMouseX,
 
@@ -45,6 +45,29 @@ enum Param {
 
   /// check current iFrame
   iFrame,
+
+  /// check a custom uniform
+  customUniform,
+}
+
+class Param {
+  Param(this.common, {this.uniform = -1})
+      : _uniformIndex = uniform,
+        assert(
+          common == CommonParam.customUniform && uniform >= 0,
+          'With a [Param.customUniform] you must provide a [uniform]>=0',
+        );
+  final CommonParam common;
+  final int uniform;
+
+  int get uniformIndex => _uniformIndex;
+  int _uniformIndex;
+  set uniformIndex(int value) {
+    if (uniformIndex == value) {
+      return;
+    }
+    _uniformIndex = value;
+  }
 }
 
 /// Type of check to use (>, <, ==)
@@ -204,7 +227,7 @@ class ShaderBuffers extends StatefulWidget {
     this.width,
     this.height,
     this.startPaused = false,
-    this.buffers = const[],
+    this.buffers = const [],
     this.onPointerDown,
     this.onPointerMove,
     this.onPointerUp,
@@ -342,9 +365,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     }
 
     for (var n = 0; n < widget.buffers.length; n++) {
-      for (var i = (widget.buffers[n].channels?.length ?? 0) - 1;
-          i >= 0;
-          i--) {
+      for (var i = (widget.buffers[n].channels?.length ?? 0) - 1; i >= 0; i--) {
         if (widget.buffers[n].channels![i].child != null) {
           layers.add(
             CustomChildBuilder(
@@ -358,6 +379,8 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         }
       }
     }
+
+    if (layers.isEmpty) layers.add(const RawImage());
   }
 
   void _pause() {
@@ -404,9 +427,53 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   ShaderState _getState() => state;
 
   /// Add the callback function operations.
+  /// Called from [LayerBuffer.computeLayer()] at each frame.
+  // TODO: optimize this code, add >= and <=
   void _addConditionalOperation(Operation p) {
-    switch (p.param) {
-      case Param.iMouseX:
+    switch (p.param.common) {
+      case CommonParam.customUniform:
+        if (p.layerBuffer.uniforms == null &&
+            p.param.uniformIndex >= p.layerBuffer.uniforms!.uniforms.length) {
+          break;
+        }
+
+        switch (p.checkType) {
+          case CheckOperator.minor:
+            p.layerBuffer.conditionalOperation.add(
+              () {
+                final uniformToCheck = p
+                    .layerBuffer.uniforms!.uniforms[p.param.uniformIndex].value;
+                p.operation(
+                  widget.controller,
+                  uniformToCheck < p.checkValue,
+                );
+              },
+            );
+          case CheckOperator.major:
+            p.layerBuffer.conditionalOperation.add(
+              () {
+                final uniformToCheck = p
+                    .layerBuffer.uniforms!.uniforms[p.param.uniformIndex].value;
+                p.operation(
+                  widget.controller,
+                  uniformToCheck > p.checkValue,
+                );
+              },
+            );
+          case CheckOperator.equal:
+            p.layerBuffer.conditionalOperation.add(
+              () {
+                final uniformToCheck = p
+                    .layerBuffer.uniforms!.uniforms[p.param.uniformIndex].value;
+                p.operation(
+                  widget.controller,
+                  uniformToCheck == p.checkValue,
+                );
+              },
+            );
+        }
+
+      case CommonParam.iMouseX:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -443,7 +510,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case Param.iMouseXNormalized:
+      case CommonParam.iMouseXNormalized:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -480,7 +547,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case Param.iMouseY:
+      case CommonParam.iMouseY:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -517,7 +584,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case Param.iMouseYNormalized:
+      case CommonParam.iMouseYNormalized:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -554,7 +621,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case Param.iTime:
+      case CommonParam.iTime:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -579,7 +646,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case Param.iFrame:
+      case CommonParam.iFrame:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(

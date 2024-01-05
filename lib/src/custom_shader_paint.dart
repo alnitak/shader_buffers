@@ -268,10 +268,6 @@ class RenderCustomShaderPaint extends RenderBox
   void attach(PipelineOwner owner) {
     super.attach(owner);
     shaderInitialized = false;
-    /// Add a RenderBox if there are no children
-    if (childCount == 0) {
-      add(RenderImage());
-    }
     loadShaders().then((value) {
       shaderInitialized = value;
     });

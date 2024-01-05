@@ -47,9 +47,6 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 mainImage: shader.mainImage,
                 buffers: shader.buffers,
                 startPaused: false,
-                onPointerDown: (controller, position) {
-                  print(position);
-                },
               ),
               Align(
                 alignment: Alignment.bottomCenter,
@@ -127,6 +124,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
                     Wrap(
                       alignment: WrapAlignment.center,
                       spacing: 4,
@@ -179,12 +177,12 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         ],
       );
 
-    /// add checks to see when the pointer is in the upper left quadrand
+    /// add checks to see when the pointer is near the left edge
     controller = ShaderController();
     controller.addConditionalOperation(
       (
         layerBuffer: mainLayer,
-        param: Param.iMouseXNormalized,
+        param: Param(CommonParam.iMouseXNormalized),
         checkType: CheckOperator.minor,
         checkValue: 0.2,
         operation: (ctrl, result) {
@@ -276,17 +274,31 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       ),
     ];
 
+    final mainLayer = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/test_isself_main.frag',
+    );
+
     final bufferA = LayerBuffer(
       shaderAssetsName: 'assets/shaders/test_isself_buffer_a.frag',
       uniforms: Uniforms(uniform.value),
     );
 
-    final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/test_isself_main.frag',
+    mainLayer.setChannels([IChannel(buffer: bufferA)]);
+
+    /// add checks to see when R>0.5
+    controller = ShaderController();
+    controller.addConditionalOperation(
+      (
+        layerBuffer: bufferA,
+        param: Param(CommonParam.customUniform, uniform: 0),
+        checkType: CheckOperator.major,
+        checkValue: 0.5,
+        operation: (ctrl, result) {
+          debugPrint('$result  ${bufferA.uniforms!.uniforms[0].value}');
+        },
+      ),
     );
 
-    // bufferA.setChannels([IChannel(isSelf: true)]);
-    mainLayer.setChannels([IChannel(buffer: bufferA)]);
     return (mainImage: mainLayer, buffers: [bufferA]);
   }
 
