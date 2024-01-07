@@ -47,7 +47,7 @@ class Uniforms {
   }
 
   void setDoubleList(List<double> values) {
-    assert(values.length == uniforms.length, 'Uniform length doesn\'t match!');
+    assert(values.length == uniforms.length, "Uniform length doesn't match!");
     for (var i = 0; i < values.length; i++) {
       uniforms[i].value = values[i];
     }

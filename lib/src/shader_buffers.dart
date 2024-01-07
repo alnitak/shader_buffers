@@ -6,7 +6,9 @@ import 'package:shader_buffers/src/custom_child.dart';
 import 'package:shader_buffers/src/custom_shader_paint.dart';
 import 'package:shader_buffers/src/i_channel.dart';
 import 'package:shader_buffers/src/imouse.dart';
+import 'package:shader_buffers/src/imouse.dart';
 import 'package:shader_buffers/src/layer_buffer.dart';
+import 'package:shader_buffers/src/uniforms.dart';
 
 /// the operation parameter to build the check
 typedef Operation = ({
@@ -27,7 +29,7 @@ typedef Operation = ({
 });
 
 /// parameter to check
-enum CommonParam {
+enum CommonUniform {
   /// check X pointer position on the texture
   iMouseX,
 
@@ -50,15 +52,19 @@ enum CommonParam {
   customUniform,
 }
 
+/// Enum to define the uniform to check within the [Operation]
+/// There are common uniforms available like `iMouse*`, `iFrame` etc. If
+/// `customUniform` is choosen also the [uniformId] must be given.
 class Param {
-  Param(this.common, {this.uniform = -1})
-      : _uniformIndex = uniform,
+  Param(this.common, {this.uniformId = -1})
+      : _uniformIndex = uniformId,
         assert(
-          common == CommonParam.customUniform && uniform >= 0,
+          common != CommonUniform.customUniform ||
+              (common == CommonUniform.customUniform && uniformId >= 0),
           'With a [Param.customUniform] you must provide a [uniform]>=0',
         );
-  final CommonParam common;
-  final int uniform;
+  final CommonUniform common;
+  final int uniformId;
 
   int get uniformIndex => _uniformIndex;
   int _uniformIndex;
@@ -96,6 +102,14 @@ class ShaderController {
   VoidCallback? _play;
   VoidCallback? _rewind;
   void Function(LayerBuffer layer, int index1, int index2)? _swapChannels;
+  void Function({
+    required LayerBuffer layerBuffer,
+    required Uniform uniform,
+    Duration duration,
+    double begin,
+    double end,
+    Curve curve,
+  })? _animateUniform;
   ShaderState Function()? _getState;
   IMouse Function()? _getIMouse;
   IMouse Function()? _getIMouseNormalized;
@@ -109,6 +123,14 @@ class ShaderController {
     VoidCallback play,
     VoidCallback rewind,
     void Function(LayerBuffer layer, int index1, int index2)? swapChannels,
+    void Function({
+      required LayerBuffer layerBuffer,
+      required Uniform uniform,
+      Duration duration,
+      double begin,
+      double end,
+      Curve curve,
+    })? animateUniform,
     ShaderState Function() getState,
     IMouse Function() getIMouse,
     IMouse Function() getIMouseNormalized,
@@ -118,12 +140,13 @@ class ShaderController {
     _play = play;
     _rewind = rewind;
     _swapChannels = swapChannels;
+    _animateUniform = animateUniform;
     _getState = getState;
     _getIMouse = getIMouse;
     _getIMouseNormalized = getIMouseNormalized;
   }
 
-  /// add an operation for checking on every frame using the given [params]
+  /// add an operation to check every frames using the given [Param]
   ///
   /// ```dart
   /// // on every frame this will be checked in [shader.mainImage] buffer.
@@ -132,10 +155,10 @@ class ShaderController {
   /// controller.addConditionalOperation(
   ///   (
   ///     layerBuffer: shader.mainImage,
-  ///     param: Param.iMouseXNormalized,
+  ///     param: Param(CommonUniform.iMouseXNormalized),
   ///     checkType: CheckOperator.minor,
   ///     checkValue: 0.5,
-  ///     operation: (result) {
+  ///     operation: (controller, result) {
   ///       print('(iMouseXNormalized is < 0.5) is $result');
   ///     },
   ///   ),
@@ -164,6 +187,23 @@ class ShaderController {
 
   /// return the state
   ShaderState getState() => _getState?.call() ?? ShaderState.none;
+
+  void animateUniform({
+    required LayerBuffer layerBuffer,
+    required Uniform uniform,
+    Duration duration = const Duration(milliseconds: 800),
+    double begin = 0,
+    double end = 1,
+    Curve curve = Curves.easeInOutCubic,
+  }) =>
+      _animateUniform?.call(
+        layerBuffer: layerBuffer,
+        uniform: uniform,
+        duration: duration,
+        begin: begin,
+        end: end,
+        curve: curve,
+      );
 
   /// get the mouse position
   IMouse getIMouse() => _getIMouse?.call() ?? IMouse.zero;
@@ -320,6 +360,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       _play,
       _rewind,
       _swapChannels,
+      _animateUniform,
       _getState,
       _getIMouse,
       _getIMouseNormalized,
@@ -424,6 +465,44 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     layoutChildren();
   }
 
+  AnimationController? animationController;
+
+  void _animateUniform({
+    required LayerBuffer layerBuffer,
+    required Uniform uniform,
+    Duration duration = const Duration(milliseconds: 800),
+    double begin = 0,
+    double end = 1,
+    Curve curve = Curves.easeInOutCubic,
+  }) {
+    animationController?.dispose();
+    animationController = AnimationController(
+      vsync: this,
+      duration: duration,
+    );
+    final animation = Tween<double>(begin: begin, end: end).animate(
+      CurvedAnimation(
+        parent: animationController!,
+        curve: curve,
+      ),
+    );
+    animation
+      ..addListener(() {
+        uniform.value = animation.value;
+        if (state != ShaderState.playing) {
+          tick(Duration.zero);
+        }
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed ||
+            status == AnimationStatus.dismissed) {
+          animationController?.dispose();
+          animationController = null;
+        }
+      });
+    animationController?.forward();
+  }
+
   ShaderState _getState() => state;
 
   /// Add the callback function operations.
@@ -431,7 +510,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   // TODO: optimize this code, add >= and <=
   void _addConditionalOperation(Operation p) {
     switch (p.param.common) {
-      case CommonParam.customUniform:
+      case CommonUniform.customUniform:
         if (p.layerBuffer.uniforms == null &&
             p.param.uniformIndex >= p.layerBuffer.uniforms!.uniforms.length) {
           break;
@@ -473,7 +552,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case CommonParam.iMouseX:
+      case CommonUniform.iMouseX:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -510,7 +589,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case CommonParam.iMouseXNormalized:
+      case CommonUniform.iMouseXNormalized:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -547,7 +626,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case CommonParam.iMouseY:
+      case CommonUniform.iMouseY:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -584,7 +663,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case CommonParam.iMouseYNormalized:
+      case CommonUniform.iMouseYNormalized:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -621,7 +700,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case CommonParam.iTime:
+      case CommonUniform.iTime:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
@@ -646,7 +725,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             );
         }
 
-      case CommonParam.iFrame:
+      case CommonUniform.iFrame:
         switch (p.checkType) {
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(

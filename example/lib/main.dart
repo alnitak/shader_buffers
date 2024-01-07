@@ -57,14 +57,34 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                       return ValueListenableBuilder(
                         valueListenable: uniform,
                         builder: (_, v, __) {
-                          return Slider(
-                            value: v[index].value,
-                            min: uniform.value[index].range.start,
-                            max: uniform.value[index].range.end,
-                            onChanged: (value) {
-                              uniform.value[index].value = value;
-                              uniform.value = uniform.value.toList();
-                            },
+                          return Row(
+                            children: [
+                              /// Sliders to control the uniforms
+                              Expanded(
+                                child: Slider(
+                                  value: v[index].value,
+                                  min: uniform.value[index].range.start,
+                                  max: uniform.value[index].range.end,
+                                  onChanged: (value) {
+                                    uniform.value[index].value = value;
+                                    uniform.value = uniform.value.toList();
+                                  },
+                                ),
+                              ),
+
+                              /// Button to animate the uniform
+                              IconButton(
+                                onPressed: () {
+                                  controller.animateUniform(
+                                    layerBuffer: shader.mainImage,
+                                    uniform: uniform.value[index],
+                                    begin: uniform.value[index].range.start,
+                                    end: uniform.value[index].range.end,
+                                  );
+                                },
+                                icon: const Icon(Icons.animation),
+                              ),
+                            ],
                           );
                         },
                       );
@@ -147,7 +167,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                             final s = controller.getState();
                             return ElevatedButton(
                               onPressed: () => setState(() {}),
-                              child: Text(s.name),
+                              child: Text('state: ${s.name}\npress to refresh'),
                             );
                           },
                         ),
@@ -182,7 +202,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     controller.addConditionalOperation(
       (
         layerBuffer: mainLayer,
-        param: Param(CommonParam.iMouseXNormalized),
+        param: Param(CommonUniform.iMouseXNormalized),
         checkType: CheckOperator.minor,
         checkValue: 0.2,
         operation: (ctrl, result) {
@@ -290,11 +310,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     controller.addConditionalOperation(
       (
         layerBuffer: bufferA,
-        param: Param(CommonParam.customUniform, uniform: 0),
+        param: Param(CommonUniform.customUniform, uniformId: 0),
         checkType: CheckOperator.major,
         checkValue: 0.5,
         operation: (ctrl, result) {
-          debugPrint('$result  ${bufferA.uniforms!.uniforms[0].value}');
+          // debugPrint('$result  ${bufferA.uniforms!.uniforms[0].value}');
         },
       ),
     );

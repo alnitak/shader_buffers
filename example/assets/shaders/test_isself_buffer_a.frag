@@ -11,10 +11,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec4 col;
     float radius = 50.;
     
-    float dist = distance(iMouse.xy, fragCoord);
+    float dist = clamp(0., 60., 60. / distance(iMouse.xy, fragCoord));
     col = vec4(0., 0., 0., 0.);
     if (dist < radius) 
-        col = vec4(R * abs(sin(iTime)), G * abs(sin(iTime)), B * abs(sin(iTime)), 1.);
+        col = vec4(R * dist, G * dist, B * dist, 1.);
     
     // vec2 from = uv-vec2(sin(iTime) * 0.1, cos(iTime) * 0.1);
     // vec4 col2 = texture(iChannel0, from) * 0.8;
