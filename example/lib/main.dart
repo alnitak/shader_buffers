@@ -80,6 +80,10 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                                     uniform: uniform.value[index],
                                     begin: uniform.value[index].range.start,
                                     end: uniform.value[index].range.end,
+                                    onAnimationEnded: (ctrl, uniformValue) {
+                                      /// Just update sliders
+                                      uniform.value = uniform.value.toList();
+                                    },
                                   );
                                 },
                                 icon: const Icon(Icons.animation),

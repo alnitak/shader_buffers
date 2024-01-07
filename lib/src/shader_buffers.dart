@@ -6,7 +6,6 @@ import 'package:shader_buffers/src/custom_child.dart';
 import 'package:shader_buffers/src/custom_shader_paint.dart';
 import 'package:shader_buffers/src/i_channel.dart';
 import 'package:shader_buffers/src/imouse.dart';
-import 'package:shader_buffers/src/imouse.dart';
 import 'package:shader_buffers/src/layer_buffer.dart';
 import 'package:shader_buffers/src/uniforms.dart';
 
@@ -109,6 +108,10 @@ class ShaderController {
     double begin,
     double end,
     Curve curve,
+    void Function(
+      ShaderController ctrl,
+      double uniformValue,
+    )? onAnimationEnded,
   })? _animateUniform;
   ShaderState Function()? _getState;
   IMouse Function()? _getIMouse;
@@ -130,6 +133,10 @@ class ShaderController {
       double begin,
       double end,
       Curve curve,
+      void Function(
+        ShaderController ctrl,
+        double uniformValue,
+      )? onAnimationEnded,
     })? animateUniform,
     ShaderState Function() getState,
     IMouse Function() getIMouse,
@@ -195,6 +202,10 @@ class ShaderController {
     double begin = 0,
     double end = 1,
     Curve curve = Curves.easeInOutCubic,
+    void Function(
+      ShaderController ctrl,
+      double uniformValue,
+    )? onAnimationEnded,
   }) =>
       _animateUniform?.call(
         layerBuffer: layerBuffer,
@@ -203,6 +214,7 @@ class ShaderController {
         begin: begin,
         end: end,
         curve: curve,
+        onAnimationEnded: onAnimationEnded,
       );
 
   /// get the mouse position
@@ -331,6 +343,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   late BoxConstraints previousConstraints;
   final layers = <Widget>[];
   ValueNotifier<int> relayout = ValueNotifier(0);
+  AnimationController? animationController;
 
   @override
   void initState() {
@@ -465,8 +478,6 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     layoutChildren();
   }
 
-  AnimationController? animationController;
-
   void _animateUniform({
     required LayerBuffer layerBuffer,
     required Uniform uniform,
@@ -474,6 +485,10 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     double begin = 0,
     double end = 1,
     Curve curve = Curves.easeInOutCubic,
+    void Function(
+      ShaderController ctrl,
+      double uniformValue,
+    )? onAnimationEnded,
   }) {
     animationController?.dispose();
     animationController = AnimationController(
@@ -498,6 +513,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             status == AnimationStatus.dismissed) {
           animationController?.dispose();
           animationController = null;
+          onAnimationEnded?.call(widget.controller, uniform.value);
         }
       });
     animationController?.forward();
