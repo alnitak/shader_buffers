@@ -24,7 +24,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    shader = shader6();
+    shader = shader4();
   }
 
   @override
@@ -76,7 +76,6 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                               IconButton(
                                 onPressed: () {
                                   controller.animateUniform(
-                                    layerBuffer: shader.mainImage,
                                     uniform: uniform.value[index],
                                     begin: uniform.value[index].range.start,
                                     end: uniform.value[index].range.end,

@@ -102,7 +102,6 @@ class ShaderController {
   VoidCallback? _rewind;
   void Function(LayerBuffer layer, int index1, int index2)? _swapChannels;
   void Function({
-    required LayerBuffer layerBuffer,
     required Uniform uniform,
     Duration duration,
     double begin,
@@ -127,7 +126,6 @@ class ShaderController {
     VoidCallback rewind,
     void Function(LayerBuffer layer, int index1, int index2)? swapChannels,
     void Function({
-      required LayerBuffer layerBuffer,
       required Uniform uniform,
       Duration duration,
       double begin,
@@ -196,7 +194,6 @@ class ShaderController {
   ShaderState getState() => _getState?.call() ?? ShaderState.none;
 
   void animateUniform({
-    required LayerBuffer layerBuffer,
     required Uniform uniform,
     Duration duration = const Duration(milliseconds: 800),
     double begin = 0,
@@ -208,7 +205,6 @@ class ShaderController {
     )? onAnimationEnded,
   }) =>
       _animateUniform?.call(
-        layerBuffer: layerBuffer,
         uniform: uniform,
         duration: duration,
         begin: begin,
@@ -479,7 +475,6 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   }
 
   void _animateUniform({
-    required LayerBuffer layerBuffer,
     required Uniform uniform,
     Duration duration = const Duration(milliseconds: 800),
     double begin = 0,
