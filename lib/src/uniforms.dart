@@ -10,10 +10,13 @@ class Uniform {
     required this.range,
     required this.defaultValue,
   });
-  RangeValues range;
-  double defaultValue;
-  String name;
+  final RangeValues range;
+  final double defaultValue;
+  final String name;
   double value;
+
+  @override
+  String toString() => 'Uniform [$name]: $value';
 }
 
 /// The uniforms list with method helpers
@@ -51,5 +54,9 @@ class Uniforms {
     for (var i = 0; i < values.length; i++) {
       uniforms[i].value = values[i];
     }
+  }
+
+  Uniform getUniformByName(String name) {
+    return uniforms.firstWhere((element) => element.name == name);
   }
 }

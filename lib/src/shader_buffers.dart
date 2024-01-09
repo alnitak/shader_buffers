@@ -102,7 +102,7 @@ class ShaderController {
   VoidCallback? _rewind;
   void Function(LayerBuffer layer, int index1, int index2)? _swapChannels;
   void Function({
-    required Uniform uniform,
+    required String uniformName,
     Duration duration,
     double begin,
     double end,
@@ -112,6 +112,7 @@ class ShaderController {
       double uniformValue,
     )? onAnimationEnded,
   })? _animateUniform;
+  void Function({required String uniformName})? _stopAnimateUniform;
   ShaderState Function()? _getState;
   IMouse Function()? _getIMouse;
   IMouse Function()? _getIMouseNormalized;
@@ -126,7 +127,7 @@ class ShaderController {
     VoidCallback rewind,
     void Function(LayerBuffer layer, int index1, int index2)? swapChannels,
     void Function({
-      required Uniform uniform,
+      required String uniformName,
       Duration duration,
       double begin,
       double end,
@@ -136,6 +137,7 @@ class ShaderController {
         double uniformValue,
       )? onAnimationEnded,
     })? animateUniform,
+    void Function({required String uniformName})? stopAnimateUniform,
     ShaderState Function() getState,
     IMouse Function() getIMouse,
     IMouse Function() getIMouseNormalized,
@@ -146,6 +148,7 @@ class ShaderController {
     _rewind = rewind;
     _swapChannels = swapChannels;
     _animateUniform = animateUniform;
+    _stopAnimateUniform = stopAnimateUniform;
     _getState = getState;
     _getIMouse = getIMouse;
     _getIMouseNormalized = getIMouseNormalized;
@@ -194,7 +197,7 @@ class ShaderController {
   ShaderState getState() => _getState?.call() ?? ShaderState.none;
 
   void animateUniform({
-    required Uniform uniform,
+    required String uniformName,
     Duration duration = const Duration(milliseconds: 800),
     double begin = 0,
     double end = 1,
@@ -205,13 +208,16 @@ class ShaderController {
     )? onAnimationEnded,
   }) =>
       _animateUniform?.call(
-        uniform: uniform,
+        uniformName: uniformName,
         duration: duration,
         begin: begin,
         end: end,
         curve: curve,
         onAnimationEnded: onAnimationEnded,
       );
+
+  void stopAnimateUniform({required String uniformName}) =>
+      _stopAnimateUniform?.call(uniformName: uniformName);
 
   /// get the mouse position
   IMouse getIMouse() => _getIMouse?.call() ?? IMouse.zero;
@@ -370,6 +376,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       _rewind,
       _swapChannels,
       _animateUniform,
+      _stopAnimateUniform,
       _getState,
       _getIMouse,
       _getIMouseNormalized,
@@ -474,8 +481,9 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     layoutChildren();
   }
 
+  // TODO: multiple animations for more then one unniform
   void _animateUniform({
-    required Uniform uniform,
+    required String uniformName,
     Duration duration = const Duration(milliseconds: 800),
     double begin = 0,
     double end = 1,
@@ -485,6 +493,19 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       double uniformValue,
     )? onAnimationEnded,
   }) {
+    /// Find the uniform name looking into all the layers
+    Uniform? u;
+    if (widget.mainImage.uniforms != null) {
+      u = widget.mainImage.uniforms?.getUniformByName(uniformName);
+    }
+    if (u == null) {
+      for (final layer in widget.buffers) {
+        u = layer.uniforms?.getUniformByName(uniformName);
+      }
+    }
+    assert(u != null, 'An uniform with "$uniformName" name is not found!');
+    if (u == null) return;
+
     animationController?.dispose();
     animationController = AnimationController(
       vsync: this,
@@ -498,7 +519,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     );
     animation
       ..addListener(() {
-        uniform.value = animation.value;
+        u!.value = animation.value;
         if (state != ShaderState.playing) {
           tick(Duration.zero);
         }
@@ -508,10 +529,20 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             status == AnimationStatus.dismissed) {
           animationController?.dispose();
           animationController = null;
-          onAnimationEnded?.call(widget.controller, uniform.value);
+          onAnimationEnded?.call(widget.controller, u!.value);
         }
       });
     animationController?.forward();
+  }
+
+  // TODO: multiple animations for more then one unniform.
+  //       now [animationController] control one uniform at a time
+  void _stopAnimateUniform({
+    required String uniformName,
+  }) {
+    animationController?.stop();
+    animationController?.dispose();
+    animationController = null;
   }
 
   ShaderState _getState() => state;
@@ -522,7 +553,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   void _addConditionalOperation(Operation p) {
     switch (p.param.common) {
       case CommonUniform.customUniform:
-        if (p.layerBuffer.uniforms == null &&
+        if (p.layerBuffer.uniforms == null ||
             p.param.uniformIndex >= p.layerBuffer.uniforms!.uniforms.length) {
           break;
         }
@@ -531,7 +562,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
               () {
-                final uniformToCheck = p
+                var uniformToCheck = p
                     .layerBuffer.uniforms!.uniforms[p.param.uniformIndex].value;
                 p.operation(
                   widget.controller,

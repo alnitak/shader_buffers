@@ -76,7 +76,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                               IconButton(
                                 onPressed: () {
                                   controller.animateUniform(
-                                    uniform: uniform.value[index],
+                                    uniformName: uniform.value[index].name,
                                     begin: uniform.value[index].range.start,
                                     end: uniform.value[index].range.end,
                                     onAnimationEnded: (ctrl, uniformValue) {

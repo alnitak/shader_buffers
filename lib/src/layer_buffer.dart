@@ -9,7 +9,6 @@ import 'package:shader_buffers/src/i_channel.dart';
 import 'package:shader_buffers/src/imouse.dart';
 import 'package:shader_buffers/src/uniforms.dart';
 
-
 /// Class used to define a buffers or the main image layer.
 ///
 class LayerBuffer {
@@ -116,12 +115,12 @@ class LayerBuffer {
   }
 
   /// Draw the shader into [layerImage].
-  /// 
-  /// Using the same [layerImage] of this layer as the input textture,
+  ///
+  /// Using the same [layerImage] of this layer as the input texture,
   /// cause a memory leak:
   /// https://github.com/flutter/flutter/issues/138627
-  /// 
-  /// Clear cache mem
+  ///
+  /// Clear unfreed cached mem on linux
   /// sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
   void computeLayer(
     Size iResolution,
@@ -130,10 +129,6 @@ class LayerBuffer {
     IMouse iMouse,
   ) {
     if (_shader == null) return;
-
-    for (final f in conditionalOperation) {
-      f();
-    }
 
     _shader!
       ..setFloat(0, iResolution.width) // iResolution
@@ -180,5 +175,10 @@ class LayerBuffer {
       iResolution.height.ceil(),
     );
     picture.dispose();
+
+
+    for (final f in conditionalOperation) {
+      f();
+    }
   }
 }
