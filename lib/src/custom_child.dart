@@ -1,11 +1,13 @@
-/// Highly inspired from
-/// https://github.com/jonahwilliams/flutter_shaders/blob/main/lib/src/animated_sampler.dart
-/// by Jonah Williams
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:shader_buffers/src/i_channel.dart';
+
+/// Highly inspired from
+/// https://github.com/jonahwilliams/flutter_shaders/blob/main/lib/src/animated_sampler.dart
+/// by Jonah Williams
+
 
 /// RenderBox which allow to store the snapshot of its child
 /// into [layerChannel.childTexture] to be used as texture.

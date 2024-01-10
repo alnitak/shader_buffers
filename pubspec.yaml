@@ -1,6 +1,6 @@
 name: shader_buffers
 description: Using shaders to feed a shader. Make shaders simplier to use.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/alnitak/shader_buffers
 issue_tracker: https://github.com/alnitak/shader_buffers/issues
 repository: https://github.com/alnitak/shader_buffers

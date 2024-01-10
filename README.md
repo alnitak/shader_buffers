@@ -26,6 +26,9 @@ Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been s
 > [!NOTE]  
 > Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627). Please thumb up! A temporary fix is used.
 
+
+![img](https://github.com/alnitak/shader_presets/raw/main/images/shader_buffers.gif)
+
 ## ShaderBuffers widget Usage
 
 The main widget to use is `ShaderBuffers`, which takes its size and `mainImage` as input. Optionally, you can add the `buffers`.
@@ -167,5 +170,5 @@ If are experimenting with ShaderToy shaders, start your code copied from it and 
 `#include <common/main_shadertoy.frag>`
 
 
-https://github.com/alnitak/shader_buffers/assets/192827/b0c5fbec-f5f5-4820-82bd-939bd4768ff9
+
 
