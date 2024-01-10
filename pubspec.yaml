@@ -1,6 +1,6 @@
 name: shader_buffers
-description: Using shaders to feed a shader
-version: 0.0.1
+description: Using shaders to feed a shader. Make shaders simplier to use.
+version: 1.0.0
 homepage:
 
 environment:
