@@ -411,6 +411,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       if (widget.mainImage.channels![i].child != null) {
         layers.add(
           CustomChildBuilder(
+            key: UniqueKey(),
             layerChannel: widget.mainImage.channels![i],
             enabled: state == ShaderState.playing,
             child: widget.mainImage.channels![i].child,
@@ -426,6 +427,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         if (widget.buffers[n].channels![i].child != null) {
           layers.add(
             CustomChildBuilder(
+              key: UniqueKey(),
               layerChannel: widget.buffers[n].channels![i],
               enabled: state == ShaderState.playing,
               child: widget.buffers[n].channels![i].child,
@@ -535,14 +537,13 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     animationController?.forward();
   }
 
-  // TODO: multiple animations for more then one unniform.
-  //       now [animationController] control one uniform at a time
+  // TODO: multiple animations for more then one uniform.
+  //       now [animationController] controls one uniform at a time
   void _stopAnimateUniform({
     required String uniformName,
   }) {
     animationController?.stop();
-    animationController?.dispose();
-    animationController = null;
+    animationController?.notifyStatusListeners(AnimationStatus.dismissed);
   }
 
   ShaderState _getState() => state;

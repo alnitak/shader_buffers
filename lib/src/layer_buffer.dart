@@ -23,7 +23,6 @@ class LayerBuffer {
   /// );
   /// // you can then set optional channels:
   /// bufferA.setChannels([
-  ///   IChannel(buffer: bufferA),
   ///   IChannel(assetsTexturePath: 'assets/bricks.jpg'),
   /// ]);
   /// ```
