@@ -46,6 +46,7 @@ This widget provides the following uniforms to the fragment shader:
 
 To start, you can define the layers:
 ```dart
+
 /// The main layer uses `shader_main.frag` as fragment shader source and some float uniforms
 final mainImage = LayerBuffer(
   shaderAssetsName: 'assets/shaders/shader_main.glsl',
@@ -64,29 +65,13 @@ final mainImage = LayerBuffer(
       ),
     ]),
 );
-/// This [LayerBuffer] uses 'shader_bufferA.glsl' as the fragment shader
-/// and a channel that uses an assets image.
-final bufferA = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_bufferA.glsl',
-);
-/// Then you can optionally assign to it the input textures needed by the fragment
-bufferA.setChannels([
-  IChannel(assetsTexturePath: 'assets/bricks.jpg'),
-]);
-/// This [LayerBuffer] uses 'shader_bufferB.glsl' as the fragment shader
-/// and `bufferA` as texture
-final bufferB = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_bufferB.glsl',
-),
-bufferB.setChannels([
-  IChannel(buffer: bufferA),
-]);
 ```
 Now you can use `ShaderBuffer`:
 ```dart
+ShaderController controller = ShaderController();
 ShaderBuffer(
+  controller: controller,
   mainImage: mainImage,
-  buffers: [ bufferA, bufferB ],
 )
 ```
 
