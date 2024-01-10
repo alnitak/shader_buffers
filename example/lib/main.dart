@@ -24,7 +24,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    shader = shader4();
+    shader = shader7();
   }
 
   @override
@@ -144,6 +144,14 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                             });
                           },
                           child: const Text('6'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              shader = shader7();
+                            });
+                          },
+                          child: const Text('7'),
                         ),
                       ],
                     ),
@@ -347,6 +355,21 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       shaderAssetsName: 'assets/shaders/mouse2.frag',
     );
     return (mainImage: mainLayer, buffers: []);
+  }
+
+  Layers shader7() {
+    uniform.value = [];
+    final bufferA = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/shader2_bufferA.frag',
+    );
+
+    final mainLayer = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/shader2_main.frag',
+    );
+
+    bufferA.setChannels([IChannel(buffer: bufferA)]);
+    mainLayer.setChannels([IChannel(buffer: bufferA)]);
+    return (mainImage: mainLayer, buffers: [bufferA]);
   }
 }
 

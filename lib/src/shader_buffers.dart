@@ -413,7 +413,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
           CustomChildBuilder(
             key: UniqueKey(),
             layerChannel: widget.mainImage.channels![i],
-            enabled: state == ShaderState.playing,
+            enabled: true, //state == ShaderState.playing,
             child: widget.mainImage.channels![i].child,
           ),
         );
@@ -429,7 +429,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
             CustomChildBuilder(
               key: UniqueKey(),
               layerChannel: widget.buffers[n].channels![i],
-              enabled: state == ShaderState.playing,
+              enabled: true, //state == ShaderState.playing,
               child: widget.buffers[n].channels![i].child,
             ),
           );

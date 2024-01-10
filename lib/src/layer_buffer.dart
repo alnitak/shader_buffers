@@ -160,8 +160,25 @@ class LayerBuffer {
       }
     }
 
-    layerImage?.dispose();
-    layerImage = null;
+
+    /// While this issue 
+    /// https://github.com/flutter/flutter/issues/138627
+    /// is still open, here the [toImage] will be used instead of [toImageSync]
+    /// 
+    // layerImage?.dispose();
+    // layerImage = null;
+
+    // final recorder = ui.PictureRecorder();
+    // ui.Canvas(recorder).drawRect(
+    //   Offset.zero & iResolution,
+    //   ui.Paint()..shader = _shader,
+    // );
+    // final picture = recorder.endRecording();
+    // layerImage = picture.toImageSync(
+    //   iResolution.width.ceil(),
+    //   iResolution.height.ceil(),
+    // );
+    // picture.dispose();
 
     final recorder = ui.PictureRecorder();
     ui.Canvas(recorder).drawRect(
@@ -169,10 +186,10 @@ class LayerBuffer {
       ui.Paint()..shader = _shader,
     );
     final picture = recorder.endRecording();
-    layerImage = picture.toImageSync(
+    picture.toImage(
       iResolution.width.ceil(),
       iResolution.height.ceil(),
-    );
+    ).then((value) => layerImage = value);
     picture.dispose();
 
 

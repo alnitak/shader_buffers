@@ -25,7 +25,7 @@ Tested on Android Linux and web, on other desktops it should work. Cannot test o
 Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.
 
 > [!NOTE]  
-> Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627). Please thumb up!
+> Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627). Please thumb up! A temporary fix is used.
 
 ## Getting started
 
