@@ -16,18 +16,18 @@
 - [x] Easily add custom uniforms.
 - [x] Animate custom uniforms.
 - [x] Play / Pause / Rewind shader.
-- [x] Conditional operations to check mouse/tap position, time, frame number and custom uniforms.
+- [x] Conditional operations to check mouse/tap position, time, frame number, and custom uniforms.
 
-***Please***, take a look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready to use shaders, like transitions and effects (from [gl-transitions](https://gl-transitions.com/) and [ShaderToy](https://www.shadertoy.com/)).
+***Please***, take a look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready-to-use shaders, like transitions and effects (from [gl-transitions](https://gl-transitions.com/) and [ShaderToy](https://www.shadertoy.com/)).
 
-Tested on Android Linux and web, on other desktops it should work. Cannot test on Mac and iOS.
-Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.
+Tested on Android Linux and web, on other desktops, it should work. Cannot test on Mac and iOS.
+Shader examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.
 
 > [!NOTE]  
-> Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627). Please thumb up! A temporary fix is used.
+> Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627). Please thumb it up! A temporary fix is used.
 
+![img](https://github.com/alnitak/shader_buffers/raw/main/images/shader_buffers.gif)
 
-![img](https://github.com/alnitak/shader_presets/raw/main/images/shader_buffers.gif)
 
 ## ShaderBuffers widget Usage
 
@@ -35,7 +35,7 @@ The main widget to use is `ShaderBuffers`, which takes its size and `mainImage` 
 
 `mainImage` and `buffers` are of type `LayerBuffer`, which defines the fragment shader asset source and the texture channels.
 
-`mainImage` shader must be provided. The more `buffers`, the more performaces will be affected.
+`mainImage` shader must be provided. The more `buffers`, the more performances will be affected.
 Think of `mainImage` as the *Image* layer fragment in ShaderToy.com and `buffers` as *Buffer[A-D]*.
 
 Each frame buffers are computed from the 1st to the last, then `mainImage`.
@@ -50,7 +50,7 @@ This widget provides the following uniforms to the fragment shader:
 To start, you can define the layers:
 ```dart
 
-/// The main layer uses `shader_main.frag` as fragment shader source and some float uniforms
+/// The main layer uses `shader_main.frag` as a fragment shader source and some float uniforms
 final mainImage = LayerBuffer(
   shaderAssetsName: 'assets/shaders/shader_main.glsl',
   uniforms: Uniforms([
@@ -78,11 +78,11 @@ ShaderBuffer(
 )
 ```
 
-`mainImage` and `buffers` are of type `IChannel`. The latter represent the `uniform sampler2D` texture to be passed to the *fragment shader*.
+`mainImage` and `buffers` are of type `IChannel`. The latter represents the `uniform sampler2D` texture to be passed to the *fragment shader*.
 
 #### User interaction
-**ShaderBuffer** listen to the pointer with *onPointerDown*, *onPointerMove*, *onPointerUp* which give back the controller and the position in pixels. Most of the time is more usefult to have back the normalized position (in the 0~1 range) instead of pixels. This can be achived with *onPointerDownNormalized*, *onPointerMoveNormalized*, *onPointerUpNormalized* callbacks.
-With the *controller*, the one passed to *ShaderBuffer* or the one returned by the *onPointer** callbacks, is possible to do these:
+**ShaderBuffer** listen to the pointer with *onPointerDown*, *onPointerMove*, *onPointerUp* which give back the controller and the position in pixels. Most of the time is more useful to have back the normalized position (in the 0~1 range) instead of pixels. This can be achieved with *onPointerDownNormalized*, *onPointerMoveNormalized*, *onPointerUpNormalized* callbacks.
+With the *controller*, the one passed to *ShaderBuffer*, or the one returned by the *onPointer** callbacks, is possible to do these:
 - play
 - pause
 - rewind
@@ -92,7 +92,7 @@ With the *controller*, the one passed to *ShaderBuffer* or the one returned by t
 
 #### Add simple check value operations
 It's possible to check for some conditions. 
-- a condition is binded to a given ***LayerBuffer***.
+- a condition is bonded to a given ***LayerBuffer***.
 - the ***param*** could be:*iMouseX*, *iMouseY*, *iMouseXNormalized*, *iMouseYNormalized*, *iTime*, *iFrame*
 - ***checkType*** could be: *minor*, *major*, *equal*
 - ***checkValue*** is the value to check
@@ -146,12 +146,12 @@ bufferC.setChannels([
 The main drawback when willing to port ShaderToy shader buffers is that they use 4 floats per RGBA channel, while with Flutter shader we are stuck using 4 int8 RGBA.
 Also, the coordinate system is slightly different: the origin in ShaderToy is *bottom-left* while in Flutter, is *top-left*. This latter issue can be easily bypassed where in the main image layer you see this:
 `vec2 uv = fragCoord.xy / iResolution.xy;`
-after this line you can add this to swap Y coordinates:
+after this line, you can add this to swap Y coordinates:
 `uv = vec2(uv.x, 1. - uv.y);`
 
 #### Writing a fragment shader
 
-It's mandatory to provide to the shader the folllowing `uniforms` since **shader_buffer** always send them:
+It's mandatory to provide the shader the following `uniforms` since **shader_buffer** always sends them:
 
 ```
 uniform vec2 iResolution;
@@ -160,13 +160,13 @@ uniform float iFrame;
 uniform vec4 iMouse;
 ```
 
-For simplicity there is `assets/shader/common/common_header.frag` to include at the very beginning of the shader:
+For simplicity, there is `assets/shader/common/common_header.frag` to include at the very beginning of the shader:
 `#include <common/common_header.frag>` 
 
 it provides also:
 `out vec4 fragColor;`
 
-If are experimenting with ShaderToy shaders, start your code copied from it and in the bottom of the file include `main_shadertoy.frag`:
+If are experimenting with ShaderToy shaders, start your code copied from it and at the bottom of the file include `main_shadertoy.frag`:
 `#include <common/main_shadertoy.frag>`
 
 
