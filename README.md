@@ -1,4 +1,4 @@
-**shader_buffers** aims to simplify the use of shaders with a focus on the ShaderToy.com website.
+**shader_buffers** aims to simplify the use of shaders with a focus on the ShaderToy.com and gl-transitions.com websites.
 
 - [Features](#Features)
 - [ShaderBuffers widget Usage](#ShaderBuffers-widget-Usage)
