@@ -182,7 +182,8 @@ class _CustomChildLayer extends OffsetLayer {
       devicePixelRatio,
     );
     final pictureRecorder = ui.PictureRecorder();
-    final canvas = Canvas(pictureRecorder);
+    // final canvas = 
+    Canvas(pictureRecorder);
     try {
       _layerChannel.childTexture = image.clone();
     } finally {

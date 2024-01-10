@@ -114,7 +114,7 @@ class RenderCustomShaderPaint extends RenderBox
         _builder = builder,
         _relayout = relayout;
 
-  late final TapAndPanGestureRecognizer _tapGestureRecognizer;
+  // late final TapAndPanGestureRecognizer _tapGestureRecognizer;
   bool hasChildWidgets = false;
 
   int get relayout => _relayout;
