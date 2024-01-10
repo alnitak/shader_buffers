@@ -1,7 +1,6 @@
 **shader_buffers** aims to simplify the use of shaders with a focus on the ShaderToy.com website.
 
 - [Features](#Features)
-- [Getting started](#Getting-started)
 - [ShaderBuffers widget Usage](#ShaderBuffers-widget-Usage)
   - [User interaction](#User-interaction)
   - [Add simple check value operations](#Add-simple-check-value-operations)
@@ -26,17 +25,6 @@ Shaders examples are from [ShaderToy.com](https://shadertoy.com) and have been s
 
 > [!NOTE]  
 > Using a shader output to feed itself, produces a memory leak: [memory leak issue](https://github.com/flutter/flutter/issues/138627). Please thumb up! A temporary fix is used.
-
-## Getting started
-
-Since this package is not yet published on *pub.dev*, add it as a dependency in `pubspec.yaml` as shown here:
-
-```
-  shader_buffers:
-    git:
-      url: https://github.com/alnitak/shader_buffers.git
-      ref: main
-```
 
 ## ShaderBuffers widget Usage
 
@@ -194,7 +182,5 @@ If are experimenting with ShaderToy shaders, start your code copied from it and 
 `#include <common/main_shadertoy.frag>`
 
 
-
-https://github.com/alnitak/shader_buffers/assets/192827/2595f3ce-3dda-4d2e-bc96-13872570dc3b
-
+https://github.com/alnitak/shader_buffers/assets/192827/b0c5fbec-f5f5-4820-82bd-939bd4768ff9
 
