@@ -563,7 +563,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
           case CheckOperator.minor:
             p.layerBuffer.conditionalOperation.add(
               () {
-                var uniformToCheck = p
+                final uniformToCheck = p
                     .layerBuffer.uniforms!.uniforms[p.param.uniformIndex].value;
                 p.operation(
                   widget.controller,

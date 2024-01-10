@@ -35,13 +35,17 @@ class Uniforms {
 
   void setValueByIndex(int index, double value) {
     assert(
-        index >= 0 && index < uniforms.length, 'Uniform index out of range!');
+      index >= 0 && index < uniforms.length,
+      'Uniform index out of range!',
+    );
     uniforms[index].value = value;
   }
 
   double getValueByIndex(int index) {
     assert(
-        index >= 0 && index < uniforms.length, 'Uniform index out of range!');
+      index >= 0 && index < uniforms.length,
+      'Uniform index out of range!',
+    );
     return uniforms[index].value;
   }
 

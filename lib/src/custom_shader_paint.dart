@@ -1,7 +1,3 @@
-import 'dart:io';
-import 'dart:math';
-import 'dart:ui' as ui;
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -71,7 +67,9 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, RenderCustomShaderPaint renderObject) {
+    BuildContext context,
+    RenderCustomShaderPaint renderObject,
+  ) {
     renderObject
       ..mainImage = mainImage
       ..iTime = iTime
@@ -117,7 +115,7 @@ class RenderCustomShaderPaint extends RenderBox
         _relayout = relayout;
 
   late final TapAndPanGestureRecognizer _tapGestureRecognizer;
-  var hasChildWidgets = false;
+  bool hasChildWidgets = false;
 
   int get relayout => _relayout;
   int _relayout;
@@ -228,7 +226,7 @@ class RenderCustomShaderPaint extends RenderBox
   @override
   bool get alwaysNeedsCompositing => true;
 
-  var shaderInitialized = false;
+  bool shaderInitialized = false;
 
   /// Initialize all the shaders used
   Future<bool> loadShaders() async {
@@ -292,15 +290,15 @@ class RenderCustomShaderPaint extends RenderBox
   void performLayout() {
     /// TODO: test for different parent layout (ie inside column)
     /// firstChild is always [mainImage], the others are the buffers
-    RenderBox? child = lastChild;
+    var child = lastChild;
 
-    double w = width ?? constraints.maxWidth;
-    double h = height ?? constraints.maxHeight;
+    var w = width ?? constraints.maxWidth;
+    var h = height ?? constraints.maxHeight;
     if (w > constraints.maxWidth) w = constraints.maxWidth;
     if (h > constraints.maxHeight) h = constraints.maxHeight;
 
-    Size sizeWithChildren = constraints.biggest;
-    Size sizeWithoutChildren = constraints.biggest;
+    var sizeWithChildren = constraints.biggest;
+    var sizeWithoutChildren = constraints.biggest;
     hasChildWidgets = false;
 
     /// Loop from last [buffer] to the first and then [mainImage] as
@@ -352,7 +350,7 @@ class RenderCustomShaderPaint extends RenderBox
     mainImage.computeLayer(size, iTime, iFrame, iMouse);
 
     /// Only paint firstChild which represent [mainImage]
-    RenderBox? child = firstChild;
+    var child = firstChild;
 
     /// Cycle from the first child, if exists, to the last, to mark
     /// them to be painted

@@ -45,7 +45,6 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 // height: 300,
                 mainImage: shader.mainImage,
                 buffers: shader.buffers,
-                startPaused: false,
               ),
               Align(
                 alignment: Alignment.bottomCenter,
@@ -393,7 +392,9 @@ class Widget1 extends StatelessWidget {
                 Text(
                   'Widget 1',
                   style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.w900),
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 Text(
                   'shader_preset',
@@ -437,7 +438,9 @@ class Widget2 extends StatelessWidget {
                 Text(
                   'Widget 2',
                   style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.w900),
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 Text(
                   'shader_preset',

@@ -1,8 +1,6 @@
 /// Highly inspired from
 /// https://github.com/jonahwilliams/flutter_shaders/blob/main/lib/src/animated_sampler.dart
 /// by Jonah Williams
-
-
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -36,7 +34,9 @@ class CustomChildBuilder extends SingleChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, covariant RenderObject renderObject) {
+    BuildContext context,
+    covariant RenderObject renderObject,
+  ) {
     (renderObject as _RenderCustomChildWidget)
       ..devicePixelRatio = MediaQuery.devicePixelRatioOf(context)
       ..layerChannel = layerChannel
@@ -98,8 +98,9 @@ class _RenderCustomChildWidget extends RenderProxyBox {
   bool get alwaysNeedsCompositing => enabled;
 
   @override
-  OffsetLayer updateCompositedLayer(
-      {required covariant _CustomChildLayer? oldLayer}) {
+  OffsetLayer updateCompositedLayer({
+    required covariant _CustomChildLayer? oldLayer,
+  }) {
     final layer = (oldLayer ?? _CustomChildLayer(layerChannel))
       ..size = size
       ..devicePixelRatio = devicePixelRatio;
@@ -157,8 +158,7 @@ class _CustomChildLayer extends OffsetLayer {
 
   ui.Image _buildChildScene(Rect bounds, double pixelRatio) {
     final builder = ui.SceneBuilder();
-    final transform =
-        Matrix4.diagonal3Values(pixelRatio, pixelRatio, 1);
+    final transform = Matrix4.diagonal3Values(pixelRatio, pixelRatio, 1);
     builder.pushTransform(transform.storage);
     addChildrenToScene(builder);
     builder.pop();
@@ -182,7 +182,7 @@ class _CustomChildLayer extends OffsetLayer {
       devicePixelRatio,
     );
     final pictureRecorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
+    final canvas = Canvas(pictureRecorder);
     try {
       _layerChannel.childTexture = image.clone();
     } finally {
