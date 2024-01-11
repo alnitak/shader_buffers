@@ -1,5 +1,7 @@
 **shader_buffers** aims to simplify the use of shaders with a focus on the ShaderToy.com and gl-transitions.com websites.
 
+[![Pub](https://img.shields.io/pub/v/shader_buffers.svg)](https://pub.dev/packages/shader_buffers)
+
 - [Features](#Features)
 - [ShaderBuffers widget Usage](#ShaderBuffers-widget-Usage)
   - [User interaction](#User-interaction)
