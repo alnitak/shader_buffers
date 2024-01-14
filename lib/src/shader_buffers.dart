@@ -116,6 +116,7 @@ class ShaderController {
   ShaderState Function()? _getState;
   IMouse Function()? _getIMouse;
   IMouse Function()? _getIMouseNormalized;
+  void Function()? _pausePointerListener;
 
   /// list of all defined operations for this controller
   List<Operation> conditionalOperation = [];
@@ -141,6 +142,7 @@ class ShaderController {
     ShaderState Function() getState,
     IMouse Function() getIMouse,
     IMouse Function() getIMouseNormalized,
+    void Function() pausePointerListener,
   ) {
     _addConditionalOperation = addConditionalOperation;
     _pause = pause;
@@ -152,6 +154,7 @@ class ShaderController {
     _getState = getState;
     _getIMouse = getIMouse;
     _getIMouseNormalized = getIMouseNormalized;
+    _pausePointerListener = pausePointerListener;
   }
 
   /// add an operation to check every frames using the given [Param]
@@ -224,6 +227,9 @@ class ShaderController {
 
   /// get the mouse position normalized to 0~1
   IMouse getIMouseNormalized() => _getIMouseNormalized?.call() ?? IMouse.zero;
+
+  /// pause listening to pointer move and pointer up until a pointer down occurs
+  void pausePointerListener() => _pausePointerListener?.call();
 }
 
 /// Widget to paint the shader with the given [LayerBuffer]s.
@@ -344,6 +350,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   late bool hasChildren;
   late BoxConstraints previousConstraints;
   final layers = <Widget>[];
+  bool pauseListener = false;
   ValueNotifier<int> relayout = ValueNotifier(0);
   AnimationController? animationController;
 
@@ -380,6 +387,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       _getState,
       _getIMouse,
       _getIMouseNormalized,
+      _pausePointerListener,
     );
 
     layoutChildren();
@@ -799,6 +807,8 @@ class _ShaderBuffersState extends State<ShaderBuffers>
 
   IMouse _getIMouseNormalized() => iMouse.iMouseNormalized;
 
+  void _pausePointerListener() => pauseListener = true;
+
   @override
   void didUpdateWidget(covariant ShaderBuffers oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -827,6 +837,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   Widget build(BuildContext context) {
     return Listener(
       onPointerDown: (details) {
+        pauseListener = false;
         if (state == ShaderState.playing) {
           iMouse.start(details.localPosition);
         }
@@ -842,6 +853,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         );
       },
       onPointerMove: (details) {
+        if (pauseListener) return;
         if (state == ShaderState.playing) {
           iMouse.update(details.localPosition);
         }
@@ -856,6 +868,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
         );
       },
       onPointerCancel: (details) {
+        if (pauseListener) return;
         if (state == ShaderState.playing) {
           iMouse.end();
         }
