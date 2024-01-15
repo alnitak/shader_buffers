@@ -22,7 +22,8 @@
 
 ***Please***, take a look at the [shader_presets](https://github.com/alnitak/shader_presets) package which implements some ready-to-use shaders, like transitions and effects (from [gl-transitions](https://gl-transitions.com/) and [ShaderToy](https://www.shadertoy.com/)).
 
-Tested on Android Linux and web, on other desktops, it should work. Cannot test on Mac and iOS.
+Tested on Android, Linux and web, it should work on other desktops. 
+Seems that impeller engine is not yet ready, on iOS it should work with [impeller disabled](https://docs.flutter.dev/perf/impeller#ios).
 Shader examples are from [ShaderToy.com](https://shadertoy.com) and have been slightly modified. Credits links are in the main shaders sources.
 
 > [!NOTE]  
