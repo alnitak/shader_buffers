@@ -23,7 +23,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    shader = shader7();
+    shader = shader8();
   }
 
   @override
@@ -46,6 +46,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                 mainImage: shader.mainImage,
                 buffers: shader.buffers,
               ),
+
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Column(
@@ -150,6 +151,14 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
                             });
                           },
                           child: const Text('7'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              shader = shader8();
+                            });
+                          },
+                          child: const Text('8'),
                         ),
                       ],
                     ),
@@ -368,6 +377,15 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     bufferA.setChannels([IChannel(buffer: bufferA)]);
     mainLayer.setChannels([IChannel(buffer: bufferA)]);
     return (mainImage: mainLayer, buffers: [bufferA]);
+  }
+
+  Layers shader8() {
+    uniform.value = [];
+    final mainLayer = LayerBuffer(
+      shaderAssetsName: 'assets/shaders/test.frag',
+    );
+
+    return (mainImage: mainLayer, buffers: []);
   }
 }
 
