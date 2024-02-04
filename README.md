@@ -1,4 +1,4 @@
-**shader_buffers** aims to simplify the use of shaders with a focus on the ShaderToy.com and gl-transitions.com websites.
+**shader_buffers** aims to simplify the use of shaders with a focus on the ShaderToy.com
 
 [![Pub](https://img.shields.io/pub/v/shader_buffers.svg)](https://pub.dev/packages/shader_buffers)
 
@@ -6,6 +6,7 @@
 - [ShaderBuffers widget Usage](#ShaderBuffers-widget-Usage)
   - [User interaction](#User-interaction)
   - [Add simple check value operations](#Add-simple-check-value-operations)
+  - [Layering shaders](#Layering_shaders)
 - [Additional information](#Additional-information)
   - [Writing a fragment shader](#Writing-a-fragment-shader)
 
@@ -117,7 +118,7 @@ controller
   )
 ```
 
-**To get something similar to this chart**
+#### Layering shaders
 
 <img src="https://github.com/alnitak/shader_buffers/assets/192827/4dc0f799-6109-4489-aae8-df379298c459" width="500" />
 
