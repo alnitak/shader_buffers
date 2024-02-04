@@ -6,7 +6,7 @@
 - [ShaderBuffers widget Usage](#ShaderBuffers-widget-Usage)
   - [User interaction](#User-interaction)
   - [Add simple check value operations](#Add-simple-check-value-operations)
-  - [Layering shaders](#Layering_shaders)
+  - [Layering shaders](#Layering-shaders)
 - [Additional information](#Additional-information)
   - [Writing a fragment shader](#Writing-a-fragment-shader)
 
