@@ -1,3 +1,5 @@
+// This include is mandatory for all shaders since the [LayerBuffer] always
+// set the uniforms defined here
 #version 460 core
 #include <flutter/runtime_effect.glsl>
 precision mediump float;

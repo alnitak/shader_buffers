@@ -45,4 +45,6 @@ flutter:
     - assets/shaders/ripple.frag
     - assets/shaders/test_isself_buffer_a.frag
     - assets/shaders/test_isself_main.frag
+    - assets/shaders/filters/black.frag
+    - assets/shaders/filters/white.frag
 

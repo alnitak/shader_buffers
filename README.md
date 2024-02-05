@@ -135,12 +135,12 @@ final bufferB = LayerBuffer(
 final bufferC = LayerBuffer(
     shaderAssetsName: 'assets/shaders/shader_bufferC.frag',
 );
-mainLayer.setChannels([IChannel(buffer: bufferC)])
+mainLayer.setChannels([IChannel(buffer: bufferC)]);
 bufferB.setChannels([IChannel(buffer: bufferA)]);
 bufferC.setChannels([
   IChannel(buffer: bufferA),
   IChannel(buffer: bufferB),
-  IChannel(assetsImage: 'assets/bricks.jpg'),
+  IChannel(assetsTexturePath: 'assets/bricks.jpg'),
 ]);
 ```
 
@@ -170,7 +170,7 @@ For simplicity, there is `assets/shader/common/common_header.frag` to include at
 it provides also:
 `out vec4 fragColor;`
 
-If are experimenting with ShaderToy shaders, start your code copied from it and at the bottom of the file include `main_shadertoy.frag`:
+If you are experimenting with ShaderToy shaders, start your code copied from it and at the bottom of the file include `main_shadertoy.frag`:
 `#include <common/main_shadertoy.frag>`
 
 

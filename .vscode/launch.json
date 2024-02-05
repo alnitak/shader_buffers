@@ -23,6 +23,14 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"
-        }
+        },
+        {
+            "name": "Simple Layer example",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/simple_layers.dart",
+            "flutterMode": "debug",
+            "cwd": "${workspaceFolder}/example"
+        },
     ]
 }
