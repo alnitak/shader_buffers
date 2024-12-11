@@ -551,6 +551,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     required String uniformName,
   }) {
     animationController?.stop();
+    // ignore: invalid_use_of_protected_member
     animationController?.notifyStatusListeners(AnimationStatus.dismissed);
   }
 
@@ -899,7 +900,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
       child: RepaintBoundary(
         child: ValueListenableBuilder(
           valueListenable: relayout,
-          builder: (_, __, ___) {
+          builder: (_, value, ___) {
             return CustomShaderPaint(
               mainImage: widget.mainImage,
               buffers: widget.buffers,
@@ -908,7 +909,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
               iMouse: iMouse.iMouse,
               width: widget.width,
               height: widget.height,
-              relayout: __,
+              relayout: value,
               builder: (size) {
                 /// CustomShaderPaint has been laid out, set iMouse window size
                 iMouse = IMouseController(

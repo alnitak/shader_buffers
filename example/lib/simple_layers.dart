@@ -3,12 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:shader_buffers/shader_buffers.dart';
 
-
 /// Code to demostrate the use of multiple image filter fragment shaders
 /// to apply in sequence to a single image. Something like this:
 /// https://github.com/alnitak/shader_buffers?tab=readme-ov-file#layering-shaders
-/// 
-/// Please, read the comments of fragment source code 
+///
+/// Please, read the comments of fragment source code
 /// located in `assets/shaders/filters` and the documentation
 /// for writing a fragment shader
 /// https://github.com/alnitak/shader_buffers?tab=readme-ov-file#writing-a-fragment-shader
@@ -74,7 +73,7 @@ class _MainAppState extends State<MainApp> {
 
     /// tells the main layer to use the [bufferA] output as a texture uniform
     mainImage.setChannels([IChannel(buffer: bufferA)]);
-    
+
     /// tells the first layer to use an image as a texture uniform
     bufferA.setChannels([IChannel(assetsTexturePath: 'assets/flutter.png')]);
   }
@@ -98,7 +97,6 @@ class _MainAppState extends State<MainApp> {
                 );
               },
             ),
-
             ValueListenableBuilder(
               valueListenable: valueBlack,
               builder: (_, v, __) {
@@ -112,7 +110,6 @@ class _MainAppState extends State<MainApp> {
                 );
               },
             ),
-
             Expanded(
               child: ShaderBuffers(
                 controller: controller,

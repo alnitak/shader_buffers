@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shader_buffers/src/imouse.dart';
@@ -360,17 +362,18 @@ class RenderCustomShaderPaint extends RenderBox
         child = childParentData?.nextSibling;
       }
     }
-    context.canvas.drawImage(
-      mainImage.layerImage ?? mainImage.blankImage!,
-      Offset.zero,
-      Paint(),
-    );
+    // context.canvas.drawImage(
+    //   mainImage.layerImage ?? mainImage.blankImage!,
+    //   Offset.zero,
+    //   Paint(),
+    // );
 
     /// If we will want to have some fun..
-    // paintImage(
-    //   canvas: context.canvas,
-    //   rect: offset & size,
-    //   image: mainImage.layerImage ?? mainImage.blankImage!,
-    // );
+    paintImage(
+      canvas: context.canvas,
+      rect: offset & size,
+      fit: BoxFit.fill,
+      image: mainImage.layerImage ?? mainImage.blankImage!,
+    );
   }
 }

@@ -31,16 +31,19 @@ class IMouse {
 enum PointerState {
   ///
   onPointerDown,
+
   ///
   onPointerMove,
+
   ///
   onPointerUp,
+
   ///
   none,
 }
 
 /// Class to control user tap and pan to manage the `vec4 iMouse` uniform
-/// 
+///
 class IMouseController {
   /// Controllore to manage the `vec4 iMouse` uniform
   IMouseController({

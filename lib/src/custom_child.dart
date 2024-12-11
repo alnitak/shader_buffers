@@ -8,7 +8,6 @@ import 'package:shader_buffers/src/i_channel.dart';
 /// https://github.com/jonahwilliams/flutter_shaders/blob/main/lib/src/animated_sampler.dart
 /// by Jonah Williams
 
-
 /// RenderBox which allow to store the snapshot of its child
 /// into [layerChannel.childTexture] to be used as texture.
 /// When enable the snapshot is performed otherwise the child
@@ -184,7 +183,7 @@ class _CustomChildLayer extends OffsetLayer {
       devicePixelRatio,
     );
     final pictureRecorder = ui.PictureRecorder();
-    // final canvas = 
+    // final canvas =
     Canvas(pictureRecorder);
     try {
       _layerChannel.childTexture = image.clone();

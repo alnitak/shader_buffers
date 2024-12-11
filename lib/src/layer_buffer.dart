@@ -28,11 +28,22 @@ class LayerBuffer {
   /// ```
   LayerBuffer({
     required this.shaderAssetsName,
+    this.scaleRenderView = 1,
     this.uniforms,
-  });
+  }) : assert(scaleRenderView > 0, 'scaleRenderView must be > 0');
 
   /// The fragment shader source to use
   final String shaderAssetsName;
+
+  /// Scale the rendered window.
+  ///
+  /// It happens that a shader could be computationally heavy.
+  /// You can reduce the resolution of the rendered window: by setting
+  /// [scaleRenderView] to 0.5 for example, you will get a half
+  /// resolution image. But this could cause pixelation. If you want instead
+  /// to get a higher resolution image, ie for zooming, you can set the value
+  /// to 2.
+  final double scaleRenderView;
 
   /// additional uniforms
   Uniforms? uniforms;
@@ -52,6 +63,8 @@ class LayerBuffer {
   /// Used internally when shader or channel are not yet initialized
   ui.Image? blankImage;
 
+  double _deviceAspectRatio = 1;
+
   List<void Function()> conditionalOperation = [];
 
   /// set channels of this layer
@@ -64,6 +77,8 @@ class LayerBuffer {
     var loaded = true;
     loaded = await _loadShader();
     loaded &= await _loadAssetsTextures();
+    _deviceAspectRatio =
+        PlatformDispatcher.instance.displays.first.devicePixelRatio;
     debugPrint('LayerBuffer.init() loaded: $loaded  $shaderAssetsName');
     return loaded;
   }
@@ -129,9 +144,11 @@ class LayerBuffer {
   ) {
     if (_shader == null) return;
 
+    final realPixels = iResolution * _deviceAspectRatio * scaleRenderView;
+
     _shader!
-      ..setFloat(0, iResolution.width) // iResolution
-      ..setFloat(1, iResolution.height)
+      ..setFloat(0, realPixels.width) // iResolution
+      ..setFloat(1, realPixels.height)
       ..setFloat(2, iTime) // iTime
       ..setFloat(3, iFrame) // iFrame
       ..setFloat(4, iMouse.x) // iMouse
@@ -160,11 +177,10 @@ class LayerBuffer {
       }
     }
 
-
-    /// While this issue 
+    /// While this issue
     /// https://github.com/flutter/flutter/issues/138627
     /// is still open, here the [toImage] will be used instead of [toImageSync]
-    /// 
+    ///
     // layerImage?.dispose();
     // layerImage = null;
 
@@ -182,16 +198,17 @@ class LayerBuffer {
 
     final recorder = ui.PictureRecorder();
     ui.Canvas(recorder).drawRect(
-      Offset.zero & iResolution,
+      Offset.zero & realPixels,
       ui.Paint()..shader = _shader,
     );
     final picture = recorder.endRecording();
-    picture.toImage(
-      iResolution.width.ceil(),
-      iResolution.height.ceil(),
-    ).then((value) => layerImage = value);
+    picture
+        .toImage(
+          realPixels.width.ceil(),
+          realPixels.height.ceil(),
+        )
+        .then((value) => layerImage = value);
     picture.dispose();
-
 
     for (final f in conditionalOperation) {
       f();

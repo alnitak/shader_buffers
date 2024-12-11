@@ -39,14 +39,13 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
             alignment: Alignment.center,
             children: [
               ShaderBuffers(
-                key: UniqueKey(),
+                // key: UniqueKey(),
                 controller: controller,
                 // width: 250,
                 // height: 300,
                 mainImage: shader.mainImage,
                 buffers: shader.buffers,
               ),
-
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Column(
@@ -383,6 +382,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     uniform.value = [];
     final mainLayer = LayerBuffer(
       shaderAssetsName: 'assets/shaders/test.frag',
+      scaleRenderView: 0.5,
     );
 
     return (mainImage: mainLayer, buffers: []);
