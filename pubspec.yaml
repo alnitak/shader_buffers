@@ -8,7 +8,7 @@ issue_tracker: https://github.com/alnitak/shader_buffers/issues
 repository: https://github.com/alnitak/shader_buffers
 topics:
   - shader
-  - shaderToy
+  - shadertoy
 
 environment:
   sdk: '>=3.1.5 <4.0.0'
