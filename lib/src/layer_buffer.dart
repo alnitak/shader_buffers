@@ -78,7 +78,7 @@ class LayerBuffer {
     loaded = await _loadShader();
     loaded &= await _loadAssetsTextures();
     _deviceAspectRatio =
-        PlatformDispatcher.instance.displays.first.devicePixelRatio;
+        PlatformDispatcher.instance.views.first.devicePixelRatio;
     debugPrint('LayerBuffer.init() loaded: $loaded  $shaderAssetsName');
     return loaded;
   }
@@ -164,16 +164,19 @@ class LayerBuffer {
     /// eventually add sampler2D uniforms
     for (var i = 0; i < (channels?.length ?? 0); i++) {
       if (channels![i].assetsTexturePath != null) {
-        _shader!.setImageSampler(i, channels![i].assetsTexture ?? blankImage!);
+        _shader!.setImageSampler(i, channels![i].texture ?? blankImage!);
       } else if (channels![i].child != null) {
         _shader!.setImageSampler(i, channels![i].childTexture ?? blankImage!);
       } else {
-        _shader!.setImageSampler(
-          i,
-          channels![i].isSelf
-              ? layerImage ?? blankImage!
-              : channels![i].buffer?.layerImage ?? blankImage!,
-        );
+        ui.Image? img;
+        if (channels![i].isSelf) {
+          img = layerImage ?? blankImage!;
+        } else {
+          if (channels![i].buffer?.layerImage == null) {
+            img = channels![i].texture;
+          }
+        }
+        _shader!.setImageSampler(i, img ?? blankImage!);
       }
     }
 
