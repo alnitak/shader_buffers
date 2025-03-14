@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, avoid_positional_boolean_parameters
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -20,9 +20,13 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
     this.height,
     this.builder,
     this.relayout = 0,
+    this.onShaderLoaded,
     super.key,
     super.children,
   });
+
+  /// Callback when the shader is ready.
+  final void Function(bool isLoaded)? onShaderLoaded;
 
   /// Mark need layout. Used ie when rewind shader.
   final int? relayout;
@@ -63,6 +67,7 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
       height: height,
       builder: builder,
       relayout: relayout!,
+      onShaderLoaded: onShaderLoaded,
     );
   }
 
@@ -80,11 +85,12 @@ class CustomShaderPaint extends MultiChildRenderObjectWidget {
       ..height = height
       ..buffers = buffers
       ..builder = builder
-      ..relayout = relayout!;
+      ..relayout = relayout!
+      ..onShaderLoaded = onShaderLoaded;
   }
 }
 
-/// TODO: remove this
+// TODO(me): remove this
 class CustomShaderParentData extends ContainerBoxParentData<RenderBox> {
   int? flex;
 }
@@ -105,6 +111,7 @@ class RenderCustomShaderPaint extends RenderBox
     double? height,
     List<LayerBuffer> buffers = const [],
     ShaderBuilder? builder,
+    void Function(bool isLoaded)? onShaderLoaded,
   })  : _mainImage = mainImage,
         _iTime = iTime,
         _iFrame = iFrame,
@@ -113,7 +120,14 @@ class RenderCustomShaderPaint extends RenderBox
         _height = height,
         _buffers = buffers,
         _builder = builder,
-        _relayout = relayout;
+        _relayout = relayout,
+        _onShaderLoaded = onShaderLoaded;
+
+  // ignore: unnecessary_getters_setters
+  void Function(bool isLoaded)? get onShaderLoaded => _onShaderLoaded;
+  void Function(bool isLoaded)? _onShaderLoaded;
+  set onShaderLoaded(void Function(bool isLoaded)? value) =>
+      _onShaderLoaded = value;
 
   // late final TapAndPanGestureRecognizer _tapGestureRecognizer;
   bool hasChildWidgets = false;
@@ -245,6 +259,7 @@ class RenderCustomShaderPaint extends RenderBox
     }
     initialized &= await _mainImage.init();
     shaderInitialized = initialized;
+    _onShaderLoaded?.call(initialized);
     return initialized;
   }
 
@@ -289,8 +304,8 @@ class RenderCustomShaderPaint extends RenderBox
 
   @override
   void performLayout() {
-    /// TODO: test for different parent layout (ie inside column)
-    /// firstChild is always [mainImage], the others are the buffers
+    // TODO(me): test for different parent layout (ie inside column)
+    // firstChild is always [mainImage], the others are the buffers
     var child = lastChild;
 
     var w = width ?? constraints.maxWidth;

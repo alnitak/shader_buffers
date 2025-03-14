@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -9,7 +11,7 @@ import 'package:shader_buffers/src/i_channel.dart';
 /// by Jonah Williams
 
 /// RenderBox which allow to store the snapshot of its child
-/// into [layerChannel.childTexture] to be used as texture.
+/// into [IChannel.childTexture] to be used as texture.
 /// When enable the snapshot is performed otherwise the child
 /// acts normal.
 class CustomChildBuilder extends SingleChildRenderObjectWidget {

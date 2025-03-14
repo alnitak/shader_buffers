@@ -1,6 +1,9 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:flutter/material.dart';
 import 'package:shader_buffers/shader_buffers.dart';
 
+/// layers definition
 typedef Layers = ({LayerBuffer mainImage, List<LayerBuffer> buffers});
 
 void main() {
@@ -423,7 +426,7 @@ class Widget1 extends StatelessWidget {
             const Spacer(),
             ElevatedButton(
               onPressed: () {
-                print('Widget 1');
+                debugPrint('Widget 1');
               },
               child: const Text('Widget 1'),
             ),
@@ -469,7 +472,7 @@ class Widget2 extends StatelessWidget {
             const Spacer(),
             ElevatedButton(
               onPressed: () {
-                print('Widget 2');
+                debugPrint('Widget 2');
               },
               child: const Text('Widget 2'),
             ),

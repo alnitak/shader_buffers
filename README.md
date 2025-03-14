@@ -73,10 +73,10 @@ final mainImage = LayerBuffer(
     ]),
 );
 ```
-Now you can use `ShaderBuffer`:
+Now you can use `ShaderBuffers`:
 ```dart
 ShaderController controller = ShaderController();
-ShaderBuffer(
+ShaderBuffers(
   controller: controller,
   mainImage: mainImage,
 )
@@ -85,8 +85,8 @@ ShaderBuffer(
 `mainImage` and `buffers` are of type `IChannel`. The latter represents the `uniform sampler2D` texture to be passed to the *fragment shader*.
 
 #### User interaction
-**ShaderBuffer** listen to the pointer with *onPointerDown*, *onPointerMove*, *onPointerUp* which give back the controller and the position in pixels. Most of the time is more useful to have back the normalized position (in the 0~1 range) instead of pixels. This can be achieved with *onPointerDownNormalized*, *onPointerMoveNormalized*, *onPointerUpNormalized* callbacks.
-With the *controller*, the one passed to *ShaderBuffer*, or the one returned by the *onPointer** callbacks, is possible to do these:
+**ShaderBuffers** listen to the pointer with *onPointerDown*, *onPointerMove*, *onPointerUp* which give back the controller and the position in pixels. Most of the time is more useful to have back the normalized position (in the 0~1 range) instead of pixels. This can be achieved with *onPointerDownNormalized*, *onPointerMoveNormalized*, *onPointerUpNormalized* callbacks.
+With the *controller*, the one passed to *ShaderBuffers*, or the one returned by the *onPointer** callbacks, is possible to do these:
 - play
 - pause
 - rewind

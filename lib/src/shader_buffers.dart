@@ -294,6 +294,7 @@ class ShaderBuffers extends StatefulWidget {
     this.onPointerDownNormalized,
     this.onPointerMoveNormalized,
     this.onPointerUpNormalized,
+    this.onShaderLoaded,
     super.key,
   });
 
@@ -332,6 +333,9 @@ class ShaderBuffers extends StatefulWidget {
       onPointerMoveNormalized;
   final void Function(ShaderController controller, Offset position)?
       onPointerUpNormalized;
+
+  /// callback when shader is loaded
+  final void Function(bool isLoaded)? onShaderLoaded;
 
   @override
   State<ShaderBuffers> createState() => _ShaderBuffersState();
@@ -491,7 +495,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     layoutChildren();
   }
 
-  // TODO: multiple animations for more then one unniform
+  // TODO(me): multiple animations for more then one unniform
   void _animateUniform({
     required String uniformName,
     Duration duration = const Duration(milliseconds: 800),
@@ -545,7 +549,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     animationController?.forward();
   }
 
-  // TODO: multiple animations for more then one uniform.
+  // TODO(me): multiple animations for more then one uniform.
   //       now [animationController] controls one uniform at a time
   void _stopAnimateUniform({
     required String uniformName,
@@ -559,7 +563,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
 
   /// Add the callback function operations.
   /// Called from [LayerBuffer.computeLayer()] at each frame.
-  // TODO: optimize this code, add >= and <=
+  // TODO(me): optimize this code, add >= and <=
   void _addConditionalOperation(Operation p) {
     switch (p.param.common) {
       case CommonUniform.customUniform:
@@ -917,6 +921,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
                   height: size.height,
                 );
               },
+              onShaderLoaded: widget.onShaderLoaded,
               children: layers,
             );
           },

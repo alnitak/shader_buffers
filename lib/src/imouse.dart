@@ -13,11 +13,16 @@ class IMouse {
   /// https://www.shadertoy.com/view/Mss3zH
   IMouse(this.x, this.y, this.z, this.w);
 
+  /// Default values
   double x = 1;
+  /// Default values
   double y = 1;
+  /// Default values
   double z = 1;
+  /// Default values
   double w = -1;
 
+  /// Default values
   static IMouse zero = IMouse(1, 1, 1, -1);
 
   @override
