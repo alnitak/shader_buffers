@@ -15,10 +15,13 @@ class IMouse {
 
   /// Default values
   double x = 1;
+
   /// Default values
   double y = 1;
+
   /// Default values
   double z = 1;
+
   /// Default values
   double w = -1;
 
