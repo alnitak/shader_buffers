@@ -359,6 +359,21 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   AnimationController? animationController;
 
   @override
+  void dispose() {
+    ticker?.dispose();
+    animationController?.dispose();
+    for (final channel in widget.mainImage.channels ?? <IChannel>[]) {
+      channel.buffer?.dispose();
+    }
+    for (final layer in widget.buffers) {
+      for (final channel in layer.channels ?? <IChannel>[]) {
+        channel.buffer?.dispose();
+      }
+    }
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     init();
@@ -824,12 +839,6 @@ class _ShaderBuffersState extends State<ShaderBuffers>
   void reassemble() {
     super.reassemble();
     init();
-  }
-
-  @override
-  void dispose() {
-    ticker?.dispose();
-    super.dispose();
   }
 
   /// compute layer image at every ticks
