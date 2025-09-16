@@ -1,3 +1,6 @@
+## 1.1.2
+- properly dispose ShaderBuffers
+
 ## 1.1.1
 - added `onShaderLoaded' callback to `ShaderBuffers`
 - fix the issue with the get of devicePixelRatio which caused a black widget.
