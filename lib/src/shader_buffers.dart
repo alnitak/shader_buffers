@@ -289,6 +289,7 @@ class ShaderBuffers extends StatefulWidget {
     this.height,
     this.startPaused = false,
     this.buffers = const [],
+    this.onFpsUpdated,
     this.onPointerDown,
     this.onPointerMove,
     this.onPointerUp,
@@ -318,6 +319,9 @@ class ShaderBuffers extends StatefulWidget {
 
   /// controller for this widget.
   final ShaderController controller;
+
+  /// fps callback
+  final void Function(double fps)? onFpsUpdated;
 
   /// pointer callbacks to get position in texture size range.
   final void Function(ShaderController controller, Offset position)?
@@ -856,7 +860,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     final delta = elapsed - _lastTick;
 
     if (_lastTick.inSeconds != elapsed.inSeconds) {
-      print(_fps);
+      widget.onFpsUpdated?.call(_fps);
     }
     _lastTick = elapsed;
 
