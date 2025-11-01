@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_positional_boolean_parameters, public_member_api_docs
 
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:shader_buffers/src/custom_child.dart';
@@ -841,8 +842,46 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     init();
   }
 
+  /// Internal parameters used to compute the fps
+  double _fps = 0;
+  static const int _maxSamples = 100;
+  final Int32List _frameTimes = Int32List(_maxSamples);
+  int _frameTimeIndex = 0;
+  int _frameCount = 0;
+  int _frameTimeSum = 0;
+  Duration _lastTick = Duration.zero;
+
   /// compute layer image at every ticks
   void tick(Duration elapsed) {
+    final delta = elapsed - _lastTick;
+
+    if (_lastTick.inSeconds != elapsed.inSeconds) {
+      print(_fps);
+    }
+    _lastTick = elapsed;
+
+    // Subtract the oldest frame time from the sum
+    _frameTimeSum -= _frameTimes[_frameTimeIndex];
+
+    // Add the new frame time to the sum and the list
+    final newFrameTime = delta.inMilliseconds;
+    _frameTimeSum += newFrameTime;
+    _frameTimes[_frameTimeIndex] = newFrameTime;
+
+    // Move to the next index in the circular buffer
+    _frameTimeIndex = (_frameTimeIndex + 1) % _maxSamples;
+
+    if (_frameCount < _maxSamples) {
+      _frameCount++;
+    }
+
+    if (_frameTimeSum > 0) {
+      final double averageFrameTime = _frameTimeSum / _frameCount;
+      if (averageFrameTime > 0) {
+        _fps = 1000 / averageFrameTime;
+      }
+    }
+
     iFrame++;
     if (context.mounted) setState(() {});
   }
