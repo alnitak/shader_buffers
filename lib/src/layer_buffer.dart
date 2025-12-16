@@ -112,11 +112,9 @@ class LayerBuffer {
 
     // Load all the assets textures if any
     if (channels == null) return true;
-    for (var i = 0; i < channels!.length; ++i) {
-      for (final element in channels!) {
-        if (!element.isInited) {
-          if (!await channels![i].init()) return false;
-        }
+    for (final element in channels!) {
+      if (!element.isInited) {
+        if (!await element.init()) return false;
       }
     }
     return true;
@@ -151,10 +149,10 @@ class LayerBuffer {
       ..setFloat(1, realPixels.height)
       ..setFloat(2, iTime) // iTime
       ..setFloat(3, iFrame) // iFrame
-      ..setFloat(4, iMouse.x) // iMouse
-      ..setFloat(5, iMouse.y)
-      ..setFloat(6, iMouse.z)
-      ..setFloat(7, iMouse.w);
+      ..setFloat(4, iMouse.x * _deviceAspectRatio * scaleRenderView) // iMouse
+      ..setFloat(5, iMouse.y * _deviceAspectRatio * scaleRenderView)
+      ..setFloat(6, iMouse.z * _deviceAspectRatio * scaleRenderView)
+      ..setFloat(7, iMouse.w * _deviceAspectRatio * scaleRenderView);
 
     /// eventually add more floats uniforms from [floatsUniforms]
     for (var i = 0; i < (uniforms?.uniforms.length ?? 0); i++) {
@@ -172,11 +170,9 @@ class LayerBuffer {
         if (channels![i].isSelf) {
           img = layerImage ?? blankImage!;
         } else {
-          if (channels![i].buffer?.layerImage == null) {
-            img = channels![i].texture;
-          }
+          img = channels![i].buffer?.layerImage ?? blankImage!;
         }
-        _shader!.setImageSampler(i, img ?? blankImage!);
+        _shader!.setImageSampler(i, img);
       }
     }
 
