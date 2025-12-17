@@ -880,7 +880,7 @@ class _ShaderBuffersState extends State<ShaderBuffers>
     }
 
     if (_frameTimeSum > 0) {
-      final double averageFrameTime = _frameTimeSum / _frameCount;
+      final averageFrameTime = _frameTimeSum / _frameCount;
       if (averageFrameTime > 0) {
         _fps = 1000 / averageFrameTime;
       }
