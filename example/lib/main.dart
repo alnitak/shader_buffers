@@ -42,7 +42,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
             alignment: Alignment.center,
             children: [
               ShaderBuffers(
-                // key: UniqueKey(),
+                key: UniqueKey(),
                 controller: controller,
                 // width: 250,
                 // height: 300,
