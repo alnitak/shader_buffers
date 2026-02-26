@@ -31,20 +31,20 @@ flutter:
     - assets/
 
   shaders:
-    - assets/shaders/arrows.frag
-    - assets/shaders/mouse1.frag
-    - assets/shaders/mouse2.frag
-    - assets/shaders/shader1_main.frag
-    - assets/shaders/shader1_bufferA.frag
-    - assets/shaders/shader2_main.frag
-    - assets/shaders/shader2_bufferA.frag
-    - assets/shaders/test.frag
-    - assets/shaders/water.frag
-    - assets/shaders/page_curl.frag
-    - assets/shaders/noise_fade.frag
-    - assets/shaders/ripple.frag
-    - assets/shaders/test_isself_buffer_a.frag
-    - assets/shaders/test_isself_main.frag
-    - assets/shaders/filters/black.frag
-    - assets/shaders/filters/white.frag
+    - shaders/arrows.frag
+    - shaders/mouse1.frag
+    - shaders/mouse2.frag
+    - shaders/shader1_main.frag
+    - shaders/shader1_bufferA.frag
+    - shaders/shader2_main.frag
+    - shaders/shader2_bufferA.frag
+    - shaders/test.frag
+    - shaders/water.frag
+    - shaders/page_curl.frag
+    - shaders/noise_fade.frag
+    - shaders/ripple.frag
+    - shaders/test_isself_buffer_a.frag
+    - shaders/test_isself_main.frag
+    - shaders/filters/black.frag
+    - shaders/filters/white.frag
 

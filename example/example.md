@@ -12,7 +12,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = ShaderController();
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/mouse2.frag',
+      shaderAssetsName: 'shaders/mouse2.frag',
     );
     return MaterialApp(
       themeMode: ThemeMode.dark,

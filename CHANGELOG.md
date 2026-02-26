@@ -1,3 +1,7 @@
+## 1.1.4
+- update dependecies
+- fix: passing texture to a shader was broken
+
 ## 1.1.3
 - fix: redundant for loops and incorrect mouse events #10 (thanks to [mengyanshou](https://github.com/mengyanshou)).
 

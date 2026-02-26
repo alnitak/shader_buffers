@@ -256,13 +256,13 @@ class ShaderBuffers extends StatefulWidget {
   /// ```dart
   /// /// The main layer uses `shader_main.frag` as fragment shader source and some float uniforms
   /// final mainImage = LayerBuffer(
-  ///   shaderAssetsName: 'assets/shaders/shader_main.glsl',
+  ///   shaderAssetsName: 'shaders/shader_main.glsl',
   ///   floatUniforms: [0.5, 1],
   /// );
   /// /// This [LayerBuffer] uses 'shader_bufferA.glsl' as the fragment shader
   /// /// and a channel that uses an assets image.
   /// final bufferA = LayerBuffer(
-  ///   shaderAssetsName: 'assets/shaders/shader_bufferA.glsl',
+  ///   shaderAssetsName: 'shaders/shader_bufferA.glsl',
   /// );
   /// /// Then you can optionally assign to it the input textures needed by the fragment
   /// bufferA.setChannels([
@@ -271,7 +271,7 @@ class ShaderBuffers extends StatefulWidget {
   /// /// This [LayerBuffer] uses 'shader_bufferB.glsl' as the fragment shader
   /// /// and `bufferA` as texture
   /// final bufferB = LayerBuffer(
-  ///   shaderAssetsName: 'assets/shaders/shader_bufferB.glsl',
+  ///   shaderAssetsName: 'shaders/shader_bufferB.glsl',
   /// ),
   /// bufferB.setChannels([
   ///   IChannel(buffer: bufferA),

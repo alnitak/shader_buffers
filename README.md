@@ -56,7 +56,7 @@ To start, you can define the layers:
 
 /// The main layer uses `shader_main.frag` as a fragment shader source and some float uniforms
 final mainImage = LayerBuffer(
-  shaderAssetsName: 'assets/shaders/shader_main.glsl',
+  shaderAssetsName: 'shaders/shader_main.glsl',
   uniforms: Uniforms([
       Uniform(
         name: 'blur',
@@ -124,16 +124,16 @@ controller
 
 ```dart
 final mainLayer = LayerBuffer(
-    shaderAssetsName: 'assets/shaders/shader_main.frag',
+    shaderAssetsName: 'shaders/shader_main.frag',
 );
 final bufferA = LayerBuffer(
-    shaderAssetsName: 'assets/shaders/shader_bufferA.frag',
+    shaderAssetsName: 'shaders/shader_bufferA.frag',
 );
 final bufferB = LayerBuffer(
-    shaderAssetsName: 'assets/shaders/shader_bufferB.frag',
+    shaderAssetsName: 'shaders/shader_bufferB.frag',
 );
 final bufferC = LayerBuffer(
-    shaderAssetsName: 'assets/shaders/shader_bufferC.frag',
+    shaderAssetsName: 'shaders/shader_bufferC.frag',
 );
 mainLayer.setChannels([IChannel(buffer: bufferC)]);
 bufferB.setChannels([IChannel(buffer: bufferA)]);

@@ -206,7 +206,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   Layers shader1() {
     uniform.value = [];
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/page_curl.frag',
+      shaderAssetsName: 'shaders/page_curl.frag',
       // floatUniforms: [1.0],
     )..setChannels(
         [
@@ -261,7 +261,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     ];
 
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/water.frag',
+      shaderAssetsName: 'shaders/water.frag',
       uniforms: Uniforms(uniform.value),
     )..setChannels(
         [
@@ -276,7 +276,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   Layers shader3() {
     uniform.value = [];
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/page_curl.frag',
+      shaderAssetsName: 'shaders/page_curl.frag',
       // floatUniforms: [0.1],
     );
 
@@ -315,11 +315,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     ];
 
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/test_isself_main.frag',
+      shaderAssetsName: 'shaders/test_isself_main.frag',
     );
 
     final bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/test_isself_buffer_a.frag',
+      shaderAssetsName: 'shaders/test_isself_buffer_a.frag',
       uniforms: Uniforms(uniform.value),
     );
 
@@ -345,11 +345,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   Layers shader5() {
     uniform.value = [];
     final bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader1_bufferA.frag',
+      shaderAssetsName: 'shaders/shader1_bufferA.frag',
     );
 
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader1_main.frag',
+      shaderAssetsName: 'shaders/shader1_main.frag',
     );
 
     bufferA.setChannels([IChannel(buffer: bufferA)]);
@@ -361,7 +361,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     uniform.value = [];
 
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/mouse2.frag',
+      shaderAssetsName: 'shaders/mouse2.frag',
     );
     return (mainImage: mainLayer, buffers: []);
   }
@@ -369,11 +369,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   Layers shader7() {
     uniform.value = [];
     final bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader2_bufferA.frag',
+      shaderAssetsName: 'shaders/shader2_bufferA.frag',
     );
 
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/shader2_main.frag',
+      shaderAssetsName: 'shaders/shader2_main.frag',
     );
 
     bufferA.setChannels([IChannel(buffer: bufferA)]);
@@ -384,7 +384,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   Layers shader8() {
     uniform.value = [];
     final mainLayer = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/test.frag',
+      shaderAssetsName: 'shaders/test.frag',
       scaleRenderView: 0.5,
     );
 

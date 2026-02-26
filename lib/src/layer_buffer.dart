@@ -19,7 +19,7 @@ class LayerBuffer {
   ///
   /// ```dart
   /// final bufferA = LayerBuffer(
-  ///   shaderAssetsName: 'assets/shaders/shader3_bufferA.glsl',
+  ///   shaderAssetsName: 'shaders/shader3_bufferA.glsl',
   /// );
   /// // you can then set optional channels:
   /// bufferA.setChannels([
@@ -170,7 +170,7 @@ class LayerBuffer {
         if (channels![i].isSelf) {
           img = layerImage ?? blankImage!;
         } else {
-          img = channels![i].buffer?.layerImage ?? blankImage!;
+          img = channels![i].buffer?.layerImage ?? channels![i].texture!;
         }
         _shader!.setImageSampler(i, img);
       }

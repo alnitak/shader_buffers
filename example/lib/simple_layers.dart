@@ -8,7 +8,7 @@ import 'package:shader_buffers/shader_buffers.dart';
 /// https://github.com/alnitak/shader_buffers?tab=readme-ov-file#layering-shaders
 ///
 /// Please, read the comments of fragment source code
-/// located in `assets/shaders/filters` and the documentation
+/// located in `shaders/filters` and the documentation
 /// for writing a fragment shader
 /// https://github.com/alnitak/shader_buffers?tab=readme-ov-file#writing-a-fragment-shader
 
@@ -43,7 +43,7 @@ class _MainAppState extends State<MainApp> {
 
     /// initialize the mandatory [layerBuffer] and its uniforms
     mainImage = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/filters/black.frag',
+      shaderAssetsName: 'shaders/filters/black.frag',
       uniforms: Uniforms(
         [
           Uniform(
@@ -58,7 +58,7 @@ class _MainAppState extends State<MainApp> {
 
     /// initialize the second buffer and its uniforms
     bufferA = LayerBuffer(
-      shaderAssetsName: 'assets/shaders/filters/white.frag',
+      shaderAssetsName: 'shaders/filters/white.frag',
       uniforms: Uniforms(
         [
           Uniform(
